@@ -202,7 +202,7 @@ const LoginPage = () => {
             )}
     </form>
     {/* Links Section */}
-    <div className="flex justify-between items-center mt-4 text-sm">
+    <div className="jflex justify-between hidden items-center mt-4 text-sm">
       {/* Register / Activate */}
       <a href="/register" className="text-blue-600 hover:underline">
         Register / Activate
