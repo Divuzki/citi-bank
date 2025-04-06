@@ -194,7 +194,12 @@ const TransfersPage = () => {
         setIsVerifying(false);
       }, 3000);
     } else {
-      alert("Invalid bank details. Please check routing and account numbers");
+        setIsVerifying(true);
+        setTimeout(() => {
+          setVerifiedUser(matchedBank);
+          setIsVerifying(false);
+        }, 3000);
+      // alert("Invalid bank details. Please check routing and account numbers");
       setVerifiedUser(null);
     }
   };
