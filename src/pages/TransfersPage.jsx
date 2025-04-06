@@ -182,8 +182,6 @@ const TransfersPage = () => {
   const validateBankDetails = () => {
     const matchedBank = mockBankData.find(
       bank =>
-        bank.routineNumber === routineNumber &&
-        bank.accountNumber === accountNumber &&
         bank.bankName === selectedBank?.value
     );
 
