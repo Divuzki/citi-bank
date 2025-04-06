@@ -31,7 +31,7 @@ const Dashboard = () => {
     balance: user.balance || "0.00",
     savings: user.savings || "9876543210",
     debit: user.debit || "9876 **** **** 3210",
-    profilePicture:  "/Image/new.jpg",
+    profilePicture: user.imageUrl || "/Image/new.jpeg",
   };
 
   return (
