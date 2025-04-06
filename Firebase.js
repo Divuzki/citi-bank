@@ -9,13 +9,12 @@ import {
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDkuII8w1trFzQ6tmmAYeATcKEHnaGWETY",
-  authDomain: "newciti-5a60b.firebaseapp.com",
-  projectId: "newciti-5a60b",
-  storageBucket: "newciti-5a60b.firebasestorage.app",
-  messagingSenderId: "979541426006",
-  appId: "1:979541426006:web:5da60642704733720460f7",
-  measurementId: "G-8P25KWET6M"
+  apiKey: "AIzaSyDn0yBrw01dJSet4e5AHdGFBnIv_DMMxkI",
+  authDomain: "citi-banking-app.firebaseapp.com",
+  projectId: "citi-banking-app",
+  storageBucket: "citi-banking-app.firebasestorage.app",
+  messagingSenderId: "238730609234",
+  appId: "1:238730609234:web:d388423d4dfa9994db158b",
 };
 
 // Initialize Firebase App
