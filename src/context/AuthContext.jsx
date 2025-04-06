@@ -38,9 +38,7 @@ export const AuthProvider = ({ children }) => {
                   // Add other fields as needed
                 };
                 setUser(userData);
-                console.log("Real-time user data update:", userData);
               } else {
-                console.log("No user document found!");
                 setUser(null);
               }
               setLoading(false); // End loading once snapshot is received

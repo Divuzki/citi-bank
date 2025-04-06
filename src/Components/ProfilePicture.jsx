@@ -5,7 +5,6 @@ import LoadingSpinner from "./LoadingSpinner";
 export const ProfilePicture = () => {
 
   const { user, loading } = useAuth();
-  console.log('userData:', user)
 
 
   if (loading) {
