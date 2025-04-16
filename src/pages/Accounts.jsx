@@ -1,4 +1,4 @@
-import React from "react";
+import { Link } from "react-router-dom";
 import { Header } from "../Components/Header";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { Footer } from "../Components/Footer";
@@ -27,9 +27,9 @@ const AccountsPage = () => {
     fundsInClearing: "326.00",
     multiDepositBalance: "4,769.00",
   };
-  const formattedBalance = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedBalance = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
   }).format(user.balance);
   return (
@@ -45,7 +45,9 @@ const AccountsPage = () => {
           <div className="bg-customLightBlue border border-blue-300 rounded-lg p-6 mt-4">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700">Debit Card</h2>
+                <h2 className="text-lg font-semibold text-gray-700">
+                  Debit Card
+                </h2>
                 <p className="text-customColor">{accountsData.debitCard}</p>
               </div>
               <img
@@ -56,10 +58,12 @@ const AccountsPage = () => {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700">Available Cash</h2>
+                <h2 className="text-lg font-semibold text-gray-700">
+                  Available Cash
+                </h2>
                 <p className="text-customColor text-xl font-bold">
-  ${user.balance.toLocaleString()}
-</p>
+                  ${user.balance.toLocaleString()}
+                </p>
               </div>
               <img
                 src="Svg/cash-payment-svgrepo-com.svg"
@@ -73,43 +77,63 @@ const AccountsPage = () => {
           <div className="bg-white shadow-md rounded-lg p-6 mt-4">
             <div className="flex flex-col items-center sm:items-start space-y-4">
               <div className="w-full border-b pb-4">
-                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">Line Amount</h2>
-                <p className="text-customColor text-center sm:text-left">${accountsData.lineAmount}</p>
+                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">
+                  Line Amount
+                </h2>
+                <p className="text-customColor text-center sm:text-left">
+                  ${accountsData.lineAmount}
+                </p>
               </div>
               <div className="w-full border-b pb-4">
-                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">Funds in Clearing</h2>
-                <p className="text-customColor text-center sm:text-left">${accountsData.fundsInClearing}</p>
+                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">
+                  Funds in Clearing
+                </h2>
+                <p className="text-customColor text-center sm:text-left">
+                  ${accountsData.fundsInClearing}
+                </p>
               </div>
               <div className="w-full">
-                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">Multi Deposit Balance</h2>
-                <p className="text-customColor text-center sm:text-left">${accountsData.multiDepositBalance}</p>
+                <h2 className="text-lg font-semibold text-gray-700 text-center sm:text-left">
+                  Multi Deposit Balance
+                </h2>
+                <p className="text-customColor text-center sm:text-left">
+                  ${accountsData.multiDepositBalance}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* New Savings Account Section */}
-          <div className="mt-6 bg-gradient-to-r from-[#54b1ed] to-[#004D8E] justify-between  p-4 rounded-lg flex items-center space-x-2 relative">
-  {/* SVG Image */}
-  <div className="flex gap-4">
-  <img 
-    src="Svg/piggy-bank-svgrepo-com.svg" 
-    alt="Savings Icon" 
-    className="w-8 h-8" 
-  />
+          {/* Request a New Debit Card Section */}
+          <div className="mt-6 bg-gradient-to-r from-blue-400 to-blue-600 justify-between p-4 rounded-lg flex items-center space-x-2 relative">
+            {/* SVG Image */}
+            <div className="flex gap-4">
+              <img
+                src="Svg/atm-card-credit-svgrepo-com.svg"
+                alt="Card Icon"
+                className="w-8 h-8"
+              />
 
-  {/* Text */}
-  <div>
-    <h2 className="text-base font-semibold text-white">New Savings Account</h2>
-    <p className="text-sm text-customColor">Get savings up to 6%.</p>
-    <p className="text-sm text-customColor">LIMITED TIME OFFER</p>
-  </div>
-  </div>
+              {/* Text */}
+              <div>
+                <h2 className="text-base font-semibold text-white">
+                  Request a New Debit Card
+                </h2>
+                <p className="text-sm text-white opacity-80">
+                  Standard, Premium, or Platinum options
+                </p>
+                <p className="text-sm text-white opacity-80">
+                  SECURE CONTACTLESS PAYMENTS
+                </p>
+              </div>
+            </div>
 
-  {/* Plus Button */}
-  <button className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-customBlue text-white rounded-full w-16 h-16 flex items-center justify-center">
-    <span className="text-xl font-bold">+</span>
-  </button>
-</div>
+            {/* Plus Button with Link to Cards Page */}
+            <Link to="/cards">
+              <button className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-customBlue text-white rounded-full w-16 h-16 flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                <span className="text-xl font-bold">+</span>
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 

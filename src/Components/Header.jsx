@@ -1,14 +1,13 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import MenuIcon from "@mui/icons-material/Menu";
 import LogoutConfirmationModal from "./LogoutModel";
 import { auth } from "../../Firebase"; // Import Firebase auth for logout
 
 // Header Component
 export const Header = () => {
   const handleLogout = () => {
-    auth.signOut()
+    auth
+      .signOut()
       .then(() => {
         console.log("User logged out");
       })
@@ -23,6 +22,7 @@ export const Header = () => {
     ACCOUNTS: "/accounts",
     TRANSFERS: "/transfers",
     PAYMENTS: "/payments",
+    CARDS: "/cards",
   };
   return (
     <header className="relative bg-customColor h-56 md:h-auto text-white">
@@ -44,7 +44,7 @@ export const Header = () => {
         <div className="flex justify-between items-center px-4 py-3">
           {/* Burger Menu Icon */}
           <div className="">
-          <LogoutConfirmationModal />
+            <LogoutConfirmationModal />
           </div>
           {/* <div>
             <MenuIcon fontSize="large" />
@@ -52,7 +52,7 @@ export const Header = () => {
 
           {/* Citi Logo */}
           <div className="flex items-center justify-start">
-            <img src="/Svg/citi.svg" alt="Logo" className="w-32" />
+            <img src="/Svg/logo.png" alt="Logo" className="w-32" />
           </div>
 
           {/* Notification Icon */}
@@ -63,23 +63,25 @@ export const Header = () => {
 
         {/* Bottom Navigation Bar */}
         <nav className="flex justify-around bg-transparent py-2">
-      {Object.keys(routes).map((item, index) => {
-        const path = routes[item];
-        const isActive = location.pathname === path; // Check if the path matches the current location
+          {Object.keys(routes).map((item, index) => {
+            const path = routes[item];
+            const isActive = location.pathname === path; // Check if the path matches the current location
 
-        return (
-          <Link
-            to={path}
-            key={index}
-            className={`text-white pb-2 text-sm font-semibold ${
-              isActive ? "border-b-4 border-white" : "hover:border-b-2 hover:border-white"
-            } transition-all duration-300`}
-          >
-            {item}
-          </Link>
-        );
-      })}
-    </nav>
+            return (
+              <Link
+                to={path}
+                key={index}
+                className={`text-white pb-2 text-sm font-semibold ${
+                  isActive
+                    ? "border-b-4 border-white"
+                    : "hover:border-b-2 hover:border-white"
+                } transition-all duration-300`}
+              >
+                {item}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Desktop Sidebar (Hidden on Mobile) */}
@@ -99,30 +101,32 @@ export const Header = () => {
         {/* Sidebar Logo Section */}
         <div className="relative flex flex-col items-center justify-center mb-8">
           {/* Logo */}
-          <img src="/Svg/citi.svg" alt="Logo" className="w-32" />
+          <img src="/Svg/logo.png" alt="Logo" className="w-32" />
           {/* Text Under the Logo */}
-          <p className="text-lg font-bold">Citi Bank</p>
+          <p className="text-lg font-bold">Quontic bank</p>
         </div>
 
         {/* Sidebar Navigation Items */}
         <nav className="flex flex-col w-full p-4 items-center relative z-30">
-      {Object.keys(routes).map((item, index) => {
-        const path = routes[item];
-        const isActive = location.pathname === path; // Check if the path matches the current location
+          {Object.keys(routes).map((item, index) => {
+            const path = routes[item];
+            const isActive = location.pathname === path; // Check if the path matches the current location
 
-        return (
-          <Link
-            to={path}
-            key={index}
-            className={`py-4 px-4 rounded-lg text-sm font-semibold w-full text-left  ${
-              isActive ? "bg-white text-customColor" : "hover:bg-[#0076b6] transition-all duration-300 transform hover:scale-105 hover:translate-y-1 "
-            }`}
-          >
-            {item}
-          </Link>
-        );
-      })}
-    </nav>
+            return (
+              <Link
+                to={path}
+                key={index}
+                className={`py-4 px-4 rounded-lg text-sm font-semibold w-full text-left  ${
+                  isActive
+                    ? "bg-white text-customColor"
+                    : "hover:bg-[#0076b6] transition-all duration-300 transform hover:scale-105 hover:translate-y-1 "
+                }`}
+              >
+                {item}
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Logout Button */}
         <button

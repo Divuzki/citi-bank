@@ -6,22 +6,23 @@ export const Footer = () => {
       <div className="max-w-screen-xl mx-auto flex justify-center items-center space-x-4">
         {/* Logo */}
         <div className="md:block hidden">
-        <img
-          src="/Svg/Footer.svg" // Replace with your logo path
-          alt="Bank Logo"
-          className="w-12 h-12"
-        />
+          <img
+            src="/Svg/logo.png" // Replace with your logo path
+            alt="Bank Logo"
+            className="w-16 h-12 object-contain object-center"
+          />
         </div>
         <div className="md:hidden block">
-        <img
-          src="/Svg/citi.svg" // Replace with your logo path
-          alt="Bank Logo"
-          className="w-12 h-12"
-        />
+          <img
+            src="/Svg/logo.png" // Replace with your logo path
+            alt="Bank Logo"
+            className="w-16 h-12 object-contain object-center"
+          />
         </div>
         {/* Text */}
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} CitiBanking. All rights reserved.
+          &copy; {new Date().getFullYear()} Quontic banking. All rights
+          reserved.
         </p>
       </div>
     </footer>
