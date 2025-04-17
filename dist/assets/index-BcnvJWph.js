@@ -32966,7 +32966,7 @@ const pf = iy(hf),
                 }),
                 w.jsx("span", {
                   className: "text-white text-sm mt-2",
-                  children: "Citi Locator",
+                  children: "Quontic Locator",
                 }),
               ],
             }),
@@ -45762,11 +45762,11 @@ const jE = [
                       children: [
                         w.jsx("p", {
                           className: "py-4 border-b",
-                          children: "Another Citi A/C of Mine",
+                          children: "Another Quontic A/C of Mine",
                         }),
                         w.jsx("p", {
                           className: "py-4 border-b",
-                          children: "Another Citi A/C",
+                          children: "Another Quontic A/C",
                         }),
                       ],
                     }),
@@ -45786,11 +45786,11 @@ const jE = [
                       children: [
                         w.jsx("p", {
                           className: "py-4 border-b",
-                          children: "Another Citi A/C of Mine",
+                          children: "Another Quontic A/C of Mine",
                         }),
                         w.jsx("p", {
                           className: "py-4 border-b",
-                          children: "Another Citi A/C",
+                          children: "Another Quontic A/C",
                         }),
                       ],
                     }),

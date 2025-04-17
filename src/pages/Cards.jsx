@@ -5,6 +5,9 @@ import { Footer } from "../Components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../Firebase";
+import BlockCardModal from "../Components/BlockCardModal";
+import CardPinModal from "../Components/CardPinModal";
+import ManageLimitsModal from "../Components/ManageLimitsModal";
 
 const CardsPage = () => {
   const { user, loading } = useAuth();
@@ -22,14 +25,41 @@ const CardsPage = () => {
   const [requestSuccess, setRequestSuccess] = useState(false);
   // If user has cards in their Firebase document, use the most recent one
   const [userCards, setUserCards] = useState([]);
+  const [showBlockCardModal, setShowBlockCardModal] = useState(false);
+  const [showCardPinModal, setShowCardPinModal] = useState(false);
+  const [showManageLimitsModal, setShowManageLimitsModal] = useState(false);
+  const [activeTransactionTab, setActiveTransactionTab] = useState("physical"); // For toggling between physical and virtual card transactions
 
   // Get cards data from user or use default mock data if no cards exist yet
+  // Find active card to get limits
+  const activeCard = user.cards
+    ? user.cards.find((card) => card.status === "Approved")
+    : null;
+
+  // Virtual card data (expired)
+  const virtualCardData = {
+    debitCard: "5432 **** **** 6789",
+    cardStatus: "Expired",
+    expiryDate: "03/24", // Expired in 2024
+    cardLimit: "$3,000",
+    dailyWithdrawalLimit: "$800",
+    cardType: "Virtual Debit Card",
+    isVirtual: true,
+    lastUsed: "January 15, 2024",
+  };
+
   const cardsData = {
     debitCard: user.debit || "9876 **** **** 3210",
     cardStatus: "Active",
     expiryDate: "12/25",
-    cardLimit: "$5,000",
-    dailyWithdrawalLimit: "$1,000",
+    cardLimit:
+      activeCard && activeCard.dailySpendingLimit
+        ? `$${activeCard.dailySpendingLimit}`
+        : "$5,000",
+    dailyWithdrawalLimit:
+      activeCard && activeCard.dailyWithdrawalLimit
+        ? `$${activeCard.dailyWithdrawalLimit}`
+        : "$1,000",
     cardType: "Standard Debit Card",
     recentTransactions: [
       {
@@ -281,7 +311,7 @@ const CardsPage = () => {
                     >
                       <div className="flex justify-between items-start mb-6">
                         <div>
-                          <div className="text-xs opacity-80">Citi</div>
+                          <div className="text-xs opacity-80">Quontic</div>
                           <div className="text-sm font-bold">Banking</div>
                         </div>
                         <img
@@ -430,10 +460,70 @@ const CardsPage = () => {
           </div>
         ) : (
           <div className="bg-white p-4 flex flex-col gap-6 shadow-lg rounded-lg">
-            {/* Visual Debit Card Section */}
+            {/* Cards Section Title */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-700">
+                Your Cards
+              </h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setShowBlockCardModal(true)}
+                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded transition duration-300"
+                >
+                  Manage Cards
+                </button>
+              </div>
+            </div>
+
+            {/* Physical Debit Card Section */}
             <div className="relative overflow-hidden">
-              {/* Find the card type from cardTypes array */}
+              <h3 className="text-md font-medium text-gray-600 mb-2">
+                Physical Card
+              </h3>
               {(() => {
+                // Check if user has an active physical card
+                const hasActiveCard =
+                  user.cards &&
+                  user.cards.some(
+                    (card) => card.status === "Approved" && !card.isBlocked
+                  );
+
+                if (!hasActiveCard) {
+                  return (
+                    <div className="bg-gray-100 rounded-xl p-6 text-center shadow-md">
+                      <div className="flex flex-col items-center justify-center py-6">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-16 w-16 text-gray-400 mb-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                          />
+                        </svg>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                          No Active Physical Card
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          You don't have an active physical card at the moment.
+                        </p>
+                        <button
+                          onClick={() => setShowRequestForm(true)}
+                          className="bg-customBlue hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        >
+                          Request a Card
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // If there is an active card, show the card details
                 const cardTypeInfo =
                   cardTypes.find((card) => card.type === cardsData.cardType) ||
                   cardTypes[0];
@@ -444,7 +534,7 @@ const CardsPage = () => {
                     {/* Card Chip and Logo */}
                     <div className="flex justify-between items-start mb-8">
                       <div>
-                        <div className="text-sm opacity-80">Citi</div>
+                        <div className="text-sm opacity-80">Quontic</div>
                         <div className="text-lg font-bold">Banking</div>
                       </div>
                       <img
@@ -491,6 +581,69 @@ const CardsPage = () => {
               })()}
             </div>
 
+            {/* Virtual Card Section */}
+            <div className="relative overflow-hidden mt-4">
+              <h3 className="text-md font-medium text-gray-600 mb-2">
+                Virtual Card
+              </h3>
+              <div className="bg-gradient-to-r from-gray-400 to-gray-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-500 hover:scale-[1.02] relative">
+                {/* Expired Overlay */}
+                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center z-10 rounded-xl">
+                  <div className="bg-red-600 text-white px-4 py-2 rounded-lg transform rotate-12 font-bold text-xl border-2 border-white">
+                    EXPIRED
+                  </div>
+                </div>
+
+                {/* Card Chip and Logo */}
+                <div className="flex justify-between items-start mb-8 relative z-0">
+                  <div>
+                    <div className="text-sm opacity-80">Quontic</div>
+                    <div className="text-lg font-bold">Banking</div>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="mr-2 text-xs bg-blue-500 px-2 py-1 rounded-full">
+                      Virtual
+                    </span>
+                    <img
+                      src="/Svg/atm-card-credit-svgrepo-com.svg"
+                      alt="Virtual Card Icon"
+                      className="w-12 h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Card Number */}
+                <div className="mb-8 relative z-0">
+                  <div className="text-xs opacity-80">Card Number</div>
+                  <div className="font-mono text-xl tracking-wider">
+                    {virtualCardData.debitCard}
+                  </div>
+                </div>
+
+                {/* Card Details Bottom Row */}
+                <div className="flex justify-between items-end relative z-0">
+                  <div>
+                    <div className="text-xs opacity-80">Card Holder</div>
+                    <div className="font-bold">
+                      {user.firstName} {user.lastName}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs opacity-80">Expires</div>
+                    <div className="text-red-300 font-semibold">
+                      {virtualCardData.expiryDate}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs opacity-80">Status</div>
+                    <div className="font-semibold text-red-300">
+                      {virtualCardData.cardStatus}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Card Details */}
             <div className="bg-white shadow-md rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
@@ -501,40 +654,96 @@ const CardsPage = () => {
                 />
                 Card Details
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-customLightBlue rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Card Limit
-                  </h3>
-                  <p className="text-customColor text-xl font-bold">
-                    {cardsData.cardLimit}
-                  </p>
-                  <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-customBlue h-full rounded-full"
-                      style={{ width: "65%" }}
-                    ></div>
+
+              {/* Physical Card Details */}
+              <div className="mb-6">
+                <h3 className="text-md font-medium text-gray-600 mb-3 border-b pb-2">
+                  Physical Card
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-customLightBlue rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      Card Limit
+                    </h3>
+                    <p className="text-customColor text-xl font-bold">
+                      {cardsData.cardLimit}
+                    </p>
+                    <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-customBlue h-full rounded-full"
+                        style={{ width: "65%" }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      65% of limit used
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    65% of limit used
-                  </p>
+                  <div className="bg-customLightBlue rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      Daily Withdrawal Limit
+                    </h3>
+                    <p className="text-customColor text-xl font-bold">
+                      {cardsData.dailyWithdrawalLimit}
+                    </p>
+                    <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-customBlue h-full rounded-full"
+                        style={{ width: "30%" }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      30% of daily limit used
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-customLightBlue rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Daily Withdrawal Limit
-                  </h3>
-                  <p className="text-customColor text-xl font-bold">
-                    {cardsData.dailyWithdrawalLimit}
-                  </p>
-                  <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-customBlue h-full rounded-full"
-                      style={{ width: "30%" }}
-                    ></div>
+              </div>
+
+              {/* Virtual Card Details */}
+              <div>
+                <h3 className="text-md font-medium text-gray-600 mb-3 border-b pb-2">
+                  Virtual Card
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-100 rounded-lg p-4 relative">
+                    <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-tr-lg rounded-bl-lg">
+                      Expired
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      Card Limit
+                    </h3>
+                    <p className="text-gray-500 text-xl font-bold">
+                      {virtualCardData.cardLimit}
+                    </p>
+                    <div className="mt-2 bg-gray-300 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-gray-500 h-full rounded-full"
+                        style={{ width: "0%" }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Card expired on {virtualCardData.expiryDate}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    30% of daily limit used
-                  </p>
+                  <div className="bg-gray-100 rounded-lg p-4 relative">
+                    <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-tr-lg rounded-bl-lg">
+                      Expired
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      Daily Withdrawal Limit
+                    </h3>
+                    <p className="text-gray-500 text-xl font-bold">
+                      {virtualCardData.dailyWithdrawalLimit}
+                    </p>
+                    <div className="mt-2 bg-gray-300 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-gray-500 h-full rounded-full"
+                        style={{ width: "0%" }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Card expired on {virtualCardData.expiryDate}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -634,7 +843,39 @@ const CardsPage = () => {
                 />
                 Recent Card Transactions
               </h2>
-              <div className="overflow-hidden rounded-lg border border-gray-200">
+
+              {/* Tabs for Physical and Virtual Card Transactions */}
+              <div className="mb-4">
+                <div className="flex border-b">
+                  <button
+                    onClick={() => setActiveTransactionTab("physical")}
+                    className={`py-2 px-4 font-medium ${
+                      activeTransactionTab === "physical"
+                        ? "border-b-2 border-customBlue text-customBlue"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Physical Card
+                  </button>
+                  <button
+                    onClick={() => setActiveTransactionTab("virtual")}
+                    className={`py-2 px-4 font-medium ml-4 ${
+                      activeTransactionTab === "virtual"
+                        ? "border-b-2 border-customBlue text-customBlue"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Virtual Card (Expired)
+                  </button>
+                </div>
+              </div>
+
+              {/* Physical Card Transactions */}
+              <div
+                className={`overflow-hidden rounded-lg border border-gray-200 ${
+                  activeTransactionTab !== "physical" ? "hidden" : ""
+                }`}
+              >
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -692,6 +933,45 @@ const CardsPage = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Virtual Card Transactions */}
+              <div
+                className={`mt-4 ${
+                  activeTransactionTab !== "virtual" ? "hidden" : ""
+                }`}
+              >
+                <div className="bg-gray-100 p-4 rounded-lg text-center">
+                  <div className="flex justify-center mb-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-700">
+                    Card Expired
+                  </h3>
+                  <p className="text-gray-500 mt-1">
+                    This virtual card expired on {virtualCardData.expiryDate}{" "}
+                    and is no longer active.
+                  </p>
+                  <p className="text-gray-500 mt-1">
+                    No recent transactions are available for this card.
+                  </p>
+                  <button className="mt-4 bg-customBlue hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Request New Virtual Card
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Card Services */}
@@ -711,7 +991,10 @@ const CardsPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <button className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center">
+                  <button
+                    onClick={() => setShowBlockCardModal(true)}
+                    className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 mr-1"
@@ -728,7 +1011,10 @@ const CardsPage = () => {
                     </svg>
                     Block Card
                   </button>
-                  <button className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center">
+                  <button
+                    onClick={() => setShowCardPinModal(true)}
+                    className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 mr-1"
@@ -745,7 +1031,10 @@ const CardsPage = () => {
                     </svg>
                     Set PIN
                   </button>
-                  <button className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center">
+                  <button
+                    onClick={() => setShowManageLimitsModal(true)}
+                    className="bg-white text-customBlue px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-300 flex items-center"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 mr-1"
@@ -768,6 +1057,23 @@ const CardsPage = () => {
           </div>
         )}
       </div>
+      {/* Modals */}
+      <BlockCardModal
+        isOpen={showBlockCardModal}
+        onClose={() => setShowBlockCardModal(false)}
+        user={user}
+      />
+      <CardPinModal
+        isOpen={showCardPinModal}
+        onClose={() => setShowCardPinModal(false)}
+        user={user}
+      />
+      <ManageLimitsModal
+        isOpen={showManageLimitsModal}
+        onClose={() => setShowManageLimitsModal(false)}
+        user={user}
+      />
+
       {/* Footer */}
       <Footer />
     </div>

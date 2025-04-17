@@ -247,7 +247,7 @@ const LoginPage = () => {
         </div>
       </div>
       {/* Bottom Icons Section */}
-      <div className="flex md:hidden justify-center items-center gap-8 py-4 bg-customColor">
+      <div className="flexx hidden justify-center items-center gap-8 py-4 bg-customColor">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 bg-transparent border-blue-300 border rounded-full flex items-center justify-center">
             <img
@@ -266,7 +266,7 @@ const LoginPage = () => {
               className="w-8 h-8"
             />
           </div>
-          <span className="text-white text-sm mt-2">Citi Locator</span>
+          <span className="text-white text-sm mt-2">Quontic Locator</span>
         </div>
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 bg-transparent border-blue-300 border rounded-full flex items-center justify-center">

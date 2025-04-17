@@ -44,7 +44,7 @@ const AccountsPage = () => {
           {/* Debit Card and Available Cash Section */}
           <div className="bg-customLightBlue border border-blue-300 rounded-lg p-6 mt-4">
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div className="hidden">
                 <h2 className="text-lg font-semibold text-gray-700">
                   Debit Card
                 </h2>
@@ -115,24 +115,70 @@ const AccountsPage = () => {
 
               {/* Text */}
               <div>
-                <h2 className="text-base font-semibold text-white">
-                  Request a New Debit Card
-                </h2>
-                <p className="text-sm text-white opacity-80">
-                  Standard, Premium, or Platinum options
-                </p>
-                <p className="text-sm text-white opacity-80">
-                  SECURE CONTACTLESS PAYMENTS
-                </p>
+                {user.cards &&
+                user.cards.some((card) => card.status === "Approved") ? (
+                  <>
+                    <h2 className="text-base font-semibold text-white">
+                      You have an active debit card
+                    </h2>
+                    <p className="text-sm text-white opacity-80">
+                      View your card details and manage settings
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-base font-semibold text-white">
+                      Request a New Debit Card
+                    </h2>
+                    <p className="text-sm text-white opacity-80">
+                      Standard, Premium, or Platinum options
+                    </p>
+                    <p className="text-sm text-white opacity-80">
+                      SECURE CONTACTLESS PAYMENTS
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Plus Button with Link to Cards Page */}
-            <Link to="/cards">
-              <button className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-customBlue text-white rounded-full w-16 h-16 flex items-center justify-center hover:bg-blue-700 transition duration-300">
-                <span className="text-xl font-bold">+</span>
-              </button>
-            </Link>
+            {/* Button with Link to Cards Page or Card Details Page */}
+            {user.cards &&
+            user.cards.some((card) => card.status === "Approved") ? (
+              <Link
+                to={`/card-details/${
+                  user.cards.find((card) => card.status === "Approved").id
+                }`}
+              >
+                <button className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-customBlue text-white rounded-full w-16 h-16 flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </button>
+              </Link>
+            ) : (
+              <Link to="/cards">
+                <button className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-customBlue text-white rounded-full w-16 h-16 flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                  <span className="text-xl font-bold">+</span>
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

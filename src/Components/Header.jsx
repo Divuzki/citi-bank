@@ -21,7 +21,7 @@ export const Header = () => {
     HOME: "/dashboard", // Map HOME to /dashboard
     ACCOUNTS: "/accounts",
     TRANSFERS: "/transfers",
-    PAYMENTS: "/payments",
+    // PAYMENTS: "/payments",
     CARDS: "/cards",
   };
   return (
@@ -50,7 +50,7 @@ export const Header = () => {
             <MenuIcon fontSize="large" />
           </div> */}
 
-          {/* Citi Logo */}
+          {/* Quontic Logo */}
           <div className="flex items-center justify-start">
             <img src="/Svg/logo.png" alt="Logo" className="w-32" />
           </div>
