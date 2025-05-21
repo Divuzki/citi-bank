@@ -43,7 +43,7 @@ const TransactionPin = ({ onSubmit, onCancel, amount, transactionType }) => {
               placeholder="Enter 4-digit PIN"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">For testing, use PIN: 4456</p>
+            <p className="text-xs hidden text-gray-500 mt-1">For testing, use PIN: 4456</p>
           </div>
 
           {error && (
