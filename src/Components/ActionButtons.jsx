@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import TransactionPin from "./TransactionPin";
+import WireTransferForm from "./WireTransferForm";
+import BillPaymentForm from "./BillPaymentForm";
+import CryptoTradeForm from "./CryptoTradeForm";
+import DepositForm from "./DepositForm";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../Firebase";
 import { useAuth } from "../context/AuthContext";
@@ -8,7 +12,7 @@ export const ActionButtons = () => {
   const { user } = useAuth();
   const [showPinModal, setShowPinModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  const [amount, setAmount] = useState("");
+  const [transactionDetails, setTransactionDetails] = useState(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,25 +23,29 @@ export const ActionButtons = () => {
       name: "Wire Transfer", 
       icon: "Svg/cash-svgrepo-com.svg",
       minAmount: 100,
-      maxAmount: 50000
+      maxAmount: 50000,
+      component: WireTransferForm
     },
     { 
       name: "Pay Bills", 
       icon: "Svg/bill-list-svgrepo-com.svg",
       minAmount: 10,
-      maxAmount: 10000
+      maxAmount: 10000,
+      component: BillPaymentForm
     },
     { 
       name: "Buy Crypto", 
       icon: "Svg/buy-crypto-svgrepo-com.svg",
       minAmount: 50,
-      maxAmount: 25000
+      maxAmount: 25000,
+      component: CryptoTradeForm
     },
     { 
       name: "Deposit Funds", 
       icon: "Svg/atm-deposit-svgrepo-com.svg",
       minAmount: 10,
-      maxAmount: 100000
+      maxAmount: 100000,
+      component: DepositForm
     }
   ];
 
@@ -46,30 +54,28 @@ export const ActionButtons = () => {
     setShowTransactionModal(true);
     setError("");
     setSuccess(false);
+    setTransactionDetails(null);
   };
 
-  const handleTransactionSubmit = async () => {
-    if (!amount || isNaN(amount) || amount <= 0) {
-      setError("Please enter a valid amount");
-      return;
-    }
-
-    const numAmount = Number(amount);
-    if (numAmount < selectedAction.minAmount) {
+  const handleTransactionSubmit = (details) => {
+    const amount = Number(details.amount);
+    
+    if (amount < selectedAction.minAmount) {
       setError(`Minimum amount is $${selectedAction.minAmount}`);
       return;
     }
 
-    if (numAmount > selectedAction.maxAmount) {
+    if (amount > selectedAction.maxAmount) {
       setError(`Maximum amount is $${selectedAction.maxAmount}`);
       return;
     }
 
-    if (selectedAction.name !== "Deposit Funds" && numAmount > user.balance) {
+    if (selectedAction.name !== "Deposit Funds" && amount > user.balance) {
       setError("Insufficient funds");
       return;
     }
 
+    setTransactionDetails(details);
     setShowPinModal(true);
   };
 
@@ -77,15 +83,23 @@ export const ActionButtons = () => {
     setProcessing(true);
     try {
       const userRef = doc(db, "users", user.uid);
-      const transactionAmount = selectedAction.name === "Deposit Funds" ? Number(amount) : -Number(amount);
-      const newBalance = user.balance + transactionAmount;
+      const amount = selectedAction.name === "Deposit Funds" 
+        ? Number(transactionDetails.amount) 
+        : -Number(transactionDetails.amount);
+      
+      const newBalance = user.balance + amount;
 
       const transaction = {
-        type: "transfer",
-        amount: transactionAmount,
-        description: selectedAction.name,
+        type: selectedAction.name.toLowerCase().replace(" ", "_"),
+        amount,
+        description: getTransactionDescription(),
         date: new Date().toISOString(),
-        status: "Completed"
+        status: "Completed",
+        recipientName: transactionDetails.recipientName,
+        recipientBank: transactionDetails.recipientBank,
+        recipientAccount: transactionDetails.recipientAccount,
+        reference: transactionDetails.reference,
+        ...transactionDetails.additionalDetails
       };
 
       await updateDoc(userRef, {
@@ -98,7 +112,7 @@ export const ActionButtons = () => {
       setTimeout(() => {
         setShowTransactionModal(false);
         setSuccess(false);
-        setAmount("");
+        setTransactionDetails(null);
       }, 2000);
     } catch (err) {
       setError("Transaction failed. Please try again.");
@@ -106,6 +120,23 @@ export const ActionButtons = () => {
       setProcessing(false);
     }
   };
+
+  const getTransactionDescription = () => {
+    switch (selectedAction.name) {
+      case "Wire Transfer":
+        return `Wire Transfer to ${transactionDetails.recipientName}`;
+      case "Pay Bills":
+        return `Bill Payment - ${transactionDetails.billType}`;
+      case "Buy Crypto":
+        return `Crypto Purchase - ${transactionDetails.cryptoType}`;
+      case "Deposit Funds":
+        return `Deposit via ${transactionDetails.depositMethod}`;
+      default:
+        return selectedAction.name;
+    }
+  };
+
+  const FormComponent = selectedAction?.component;
 
   return (
     <>
@@ -129,9 +160,17 @@ export const ActionButtons = () => {
       {showTransactionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              {selectedAction.name}
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {selectedAction.name}
+              </h2>
+              <button
+                onClick={() => setShowTransactionModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
 
             {success ? (
               <div className="text-center py-4">
@@ -141,57 +180,27 @@ export const ActionButtons = () => {
                   </svg>
                 </div>
                 <p className="text-lg font-medium text-gray-800">Transaction Successful!</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Your {selectedAction.name.toLowerCase()} has been processed successfully.
+                </p>
               </div>
             ) : (
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                handleTransactionSubmit();
-              }}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-                      $
-                    </span>
-                    <input
-                      type="number"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Min: ${selectedAction.minAmount} | Max: ${selectedAction.maxAmount.toLocaleString()}
-                  </p>
-                </div>
-
+              <>
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
                     {error}
                   </div>
                 )}
 
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowTransactionModal(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-white bg-customBlue rounded-md hover:bg-blue-600"
-                    disabled={processing}
-                  >
-                    {processing ? "Processing..." : "Continue"}
-                  </button>
-                </div>
-              </form>
+                {FormComponent && (
+                  <FormComponent
+                    onSubmit={handleTransactionSubmit}
+                    onCancel={() => setShowTransactionModal(false)}
+                    minAmount={selectedAction.minAmount}
+                    maxAmount={selectedAction.maxAmount}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -201,8 +210,9 @@ export const ActionButtons = () => {
         <TransactionPin
           onSubmit={handlePinConfirm}
           onCancel={() => setShowPinModal(false)}
-          amount={Number(amount)}
+          amount={Number(transactionDetails.amount)}
           transactionType={selectedAction.name}
+          transactionDetails={transactionDetails}
         />
       )}
     </>
