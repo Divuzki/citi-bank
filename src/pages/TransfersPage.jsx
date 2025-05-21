@@ -932,7 +932,7 @@ const TransfersPage = () => {
                             maxLength="4"
                             inputMode="numeric"
                           />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs hidden text-gray-500 mt-1">
                             For testing, use PIN: 4456
                           </p>
                         </div>

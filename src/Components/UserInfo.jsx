@@ -3,7 +3,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 
 export const UserInfo = ({ name, lastLogin, profilePicture }) => (
   <div className="hidden lg:flex bg-customColor  text-white py-6 px-12 items-center justify-between mt-2 rounded-md shadow-lg">
-    <div className="absolute overflow-hidden  inset-0">
+    <div className="absolute overflow-hidden z-[-1] inset-0">
     {/* Top Left White Shape */}
     <div className="absolute top-0 left-0 w-48 h-48 bg-white opacity-5 transform -translate-x-10 -translate-y-10"></div>
 
