@@ -37,7 +37,7 @@ const mockBankData = [
     logo: "/Svg/wells-fargo.svg", // Example logo URL
   },
   {
-    bankName: "Quontic bank",
+    bankName: "Quant Equity Bank",
     routineNumber: "021000089",
     accountNumber: "111122223333",
     fullName: "Emily Davis",

@@ -103,7 +103,7 @@ export const Header = () => {
           {/* Logo */}
           <img src="/Svg/logo.png" alt="Logo" className="w-32" />
           {/* Text Under the Logo */}
-          <p className="text-lg font-bold">Quontic bank</p>
+          <p className="text-lg font-bold">Quant Equity Bank</p>
         </div>
 
         {/* Sidebar Navigation Items */}

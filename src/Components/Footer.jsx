@@ -21,7 +21,7 @@ export const Footer = () => {
         </div>
         {/* Text */}
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} Quontic banking. All rights
+          &copy; {new Date().getFullYear()} Quant Equity Banking. All rights
           reserved.
         </p>
       </div>
