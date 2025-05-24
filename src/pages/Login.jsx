@@ -72,7 +72,7 @@ const LoginPage = () => {
         </div>
         <div className="md:block hidden">
           <h1 className="text-white text-4xl font-bold mt-4">
-            Welcome to Quontic bank
+            Welcome to Quant Equity Bank
           </h1>
           <p className="text-white text-lg mt-2 mb-6">
             Discover endless possibilities with us.
@@ -110,7 +110,7 @@ const LoginPage = () => {
           <div className="text-center mb-8">
             <Logo style={{ width: "180px", height: "100px" }} />
             <h1 className="text-white text-2xl font-bold mt-2">
-              Welcome to Quontic bank
+              Welcome to Quant Equity Bank
             </h1>
           </div>
           {/* Form with Line Inputs */}
