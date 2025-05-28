@@ -188,7 +188,6 @@ const TransfersPage = () => {
   const [scheduledDate, setScheduledDate] = useState(new Date());
   const [transferNote, setTransferNote] = useState("");
   const [recentTransactions, setRecentTransactions] = useState([]);
-  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [frequentRecipients, setFrequentRecipients] = useState([]);
   // Hidden configuration for transaction approval/decline - toggleable for testing
   const [allowTransactions, setAllowTransactions] = useState(true); // Toggle this to simulate declined transactions
@@ -922,6 +921,30 @@ const TransfersPage = () => {
                     )}
                   </button>
                 </>
+              ) : showDeclineModal ? (
+                <div className="p-8 text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-shake">
+                    <svg
+                      className="w-10 h-10 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800 mb-2">
+                    Transfer Declined
+                  </p>
+                  <p className="text-md text-gray-600 max-w-xs mx-auto">
+                    Your transfer has been declined. Please try again later.
+                  </p>
+                </div>
               ) : (
                 // Transfer Confirmation and Receipt
                 <>
@@ -1196,32 +1219,6 @@ const TransfersPage = () => {
                           New Transfer
                         </button>
                       </div>
-                    </div>
-                  )}
-
-                  {showDeclineModal && (
-                    <div className="p-8 text-center">
-                      <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-shake">
-                        <svg
-                          className="w-10 h-10 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-2xl font-bold text-gray-800 mb-2">
-                        Transfer Declined
-                      </p>
-                      <p className="text-md text-gray-600 max-w-xs mx-auto">
-                        Your transfer has been declined. Please try again later.
-                      </p>
                     </div>
                   )}
                 </>
