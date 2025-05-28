@@ -190,6 +190,9 @@ const TransfersPage = () => {
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [frequentRecipients, setFrequentRecipients] = useState([]);
+  // Hidden configuration for transaction approval/decline - toggleable for testing
+  const [allowTransactions, setAllowTransactions] = useState(true); // Toggle this to simulate declined transactions
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   // Get recent transfer transactions
   useEffect(() => {
@@ -304,6 +307,19 @@ const TransfersPage = () => {
     setTransferError("");
 
     try {
+      if (!allowTransactions) {
+        // Simulate a declined transaction
+        setTimeout(() => {
+          setIsProcessing(false);
+          setShowDeclineModal(true);
+          setTimeout(() => {
+            setShowDeclineModal(false);
+            closeModal();
+          }, 2000);
+        }, 500);
+        return;
+      }
+
       const userRef = doc(db, "users", user.uid);
 
       // Calculate new balance
@@ -391,58 +407,102 @@ const TransfersPage = () => {
       {/* Main Content */}
       <div className="lg:ml-64 md:px-4 -mt-20 md:mt-0 z-20 flex-grow p-6">
         {/* Account Balance Card */}
-        <div className="bg-gradient-to-r from-customColor to-blue-700 shadow-lg rounded-lg p-6 text-white mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-light">Available Balance</h2>
-              <p className="text-3xl font-bold mt-2">
+        <div className="bg-gradient-to-br from-customColor via-blue-600 to-blue-800 shadow-xl rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
+
+          <div className="flex justify-between items-start relative z-10">
+            <div className="flex-1">
+              <div className="flex items-center mb-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                <h2 className="text-lg font-medium opacity-90">
+                  Available Balance
+                </h2>
+              </div>
+              <p className="text-4xl font-bold mt-2 mb-1 tracking-tight">
                 ${user?.balance?.toLocaleString() || "0.00"}
               </p>
-              <p className="text-sm mt-1 opacity-80">
-                Account Number: •••• {user?.accountNumber?.slice(-4) || "1234"}
+              <p className="text-sm opacity-75 flex items-center">
+                <span className="mr-2">Account Number:</span>
+                <span className="bg-white bg-opacity-20 px-2 py-1 rounded text-xs font-mono">
+                  •••• {user?.accountNumber?.slice(-4) || "255"}
+                </span>
               </p>
             </div>
-            <div className="bg-white bg-opacity-20 p-4 rounded-full">
+            <div className="bg-white bg-opacity-15 p-4 rounded-2xl backdrop-blur-sm border border-white border-opacity-20">
               <AccountBalanceIcon sx={{ fontSize: 40 }} />
             </div>
           </div>
-          <div className="mt-6 flex space-x-2">
+
+          <div className="mt-8 flex space-x-3">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-white text-customColor font-medium py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors flex-1 flex items-center justify-center"
+              className="bg-white text-customColor font-semibold py-3 px-6 rounded-xl hover:bg-blue-50 hover:shadow-lg transition-all duration-300 flex-1 flex items-center justify-center transform hover:scale-105 active:scale-95"
             >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
               <span>New Transfer</span>
             </button>
             <Link
               to="/transactions"
-              className="bg-white bg-opacity-20 text-white font-medium py-2 px-4 rounded-lg hover:bg-opacity-30 transition-colors flex items-center justify-center"
+              className="bg-white bg-opacity-20 text-white font-semibold py-3 px-6 rounded-xl hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center backdrop-blur-sm border border-white border-opacity-20 transform hover:scale-105 active:scale-95"
             >
-              <HistoryIcon className="mr-1" fontSize="small" />
+              <HistoryIcon className="mr-2" fontSize="small" />
               <span>History</span>
             </Link>
           </div>
         </div>
 
         {/* Frequent Recipients Section */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Frequent Recipients
-            </h2>
+        <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Frequent Recipients
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Quick access to your most used contacts
+              </p>
+            </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="text-customColor hover:text-blue-700 text-sm font-medium"
+              className="bg-customColor text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md"
             >
-              + Add New
+              <svg
+                className="w-4 h-4 inline mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add New
             </button>
           </div>
 
           {frequentRecipients.length > 0 ? (
-            <div className="space-y-4">
+            <div className="grid gap-4">
               {frequentRecipients.map((recipient, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="group flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-customColor hover:shadow-md cursor-pointer transition-all duration-300 transform hover:scale-[1.02] bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50"
                   onClick={() => {
                     // Pre-fill the transfer form with this recipient
                     const bank = mockBankData.find(
@@ -471,32 +531,51 @@ const TransfersPage = () => {
                   }}
                 >
                   <div className="flex items-center">
-                    <div className="bg-blue-100 p-2 rounded-full mr-3">
+                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-xl mr-4 group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-300">
                       <AccountBalanceIcon
                         sx={{ fontSize: 24, color: "#004D8E" }}
                       />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">
+                      <p className="font-semibold text-gray-800 group-hover:text-customColor transition-colors duration-300">
                         {recipient.name}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {recipient.bank} •••• {recipient.account.slice(-4)}
+                      <p className="text-sm text-gray-500 flex items-center mt-1">
+                        <span className="mr-2">{recipient.bank}</span>
+                        <span className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
+                          •••• {recipient.account.slice(-4)}
+                        </span>
                       </p>
+                      <div className="flex items-center mt-2">
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          {recipient.count} transfers
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <ArrowForwardIosOutlinedIcon
-                    sx={{ color: "#9fa7ae", fontSize: 16 }}
-                  />
+                  <div className="flex items-center">
+                    <ArrowForwardIosOutlinedIcon
+                      sx={{ color: "#9fa7ae", fontSize: 16 }}
+                      className="group-hover:text-customColor transition-colors duration-300"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 text-gray-500">
-              <p>No frequent recipients yet</p>
+            <div className="text-center py-12">
+              <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AccountBalanceIcon sx={{ fontSize: 40, color: "#9CA3AF" }} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                No frequent recipients yet
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Start making transfers to see your frequent contacts here
+              </p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="mt-2 text-customColor hover:text-blue-700 text-sm font-medium"
+                className="bg-customColor text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md"
               >
                 Make your first transfer
               </button>
@@ -630,6 +709,33 @@ const TransfersPage = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Developer toggle for transaction outcomes - only visible in development */}
+      <div className="fixed bottom-4 right-4 bg-gray-800 text-white p-2 rounded-lg shadow-lg z-50 text-xs">
+        <div className="flex items-center space-x-2">
+          <span>Transaction Mode:</span>
+          <button
+            onClick={() => setAllowTransactions(!allowTransactions)}
+            className={`px-2 py-1 rounded ${
+              allowTransactions ? "bg-green-500" : "bg-red-500"
+            }`}
+          >
+            {allowTransactions ? "Success" : "Decline"}
+          </button>
+          <div
+            className={`w-2 h-2 rounded-full ${
+              allowTransactions
+                ? "bg-green-500 animate-pulse"
+                : "bg-red-500 animate-pulse"
+            }`}
+          ></div>
+        </div>
+        <div className="text-gray-300 text-xs mt-1">
+          {allowTransactions
+            ? "Transactions will succeed"
+            : "Transactions will be declined"}
+        </div>
+      </div>
 
       {/* Transfer Modal */}
       {isModalOpen && (
@@ -1090,6 +1196,32 @@ const TransfersPage = () => {
                           New Transfer
                         </button>
                       </div>
+                    </div>
+                  )}
+
+                  {showDeclineModal && (
+                    <div className="p-8 text-center">
+                      <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-shake">
+                        <svg
+                          className="w-10 h-10 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-2xl font-bold text-gray-800 mb-2">
+                        Transfer Declined
+                      </p>
+                      <p className="text-md text-gray-600 max-w-xs mx-auto">
+                        Your transfer has been declined. Please try again later.
+                      </p>
                     </div>
                   )}
                 </>

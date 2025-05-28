@@ -3,7 +3,9 @@ import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
+import OTPVerification from "./pages/OTPVerification";
 import ProtectedRoute from "./Components/ProtectedRoute"; // Import the ProtectedRoute component
+import OTPProtectedRoute from "./Components/OTPProtectedRoute"; // Import the OTPProtectedRoute component
 import AccountsPage from "./pages/Accounts";
 import TransfersPage from "./pages/TransfersPage";
 import PaymentsPage from "./pages/Payments";
@@ -19,53 +21,56 @@ function App() {
           {/* Define the route for the login page */}
           <Route path="/" element={<LoginPage />} />
 
+          {/* OTP Verification Route */}
+          <Route path="/otp-verification" element={<OTPVerification />} />
+
           {/* Protected Route for Dashboard */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
           <Route
             path="/accounts"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <AccountsPage />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
           <Route
             path="/transfers"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <TransfersPage />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
           <Route
             path="/payments"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <PaymentsPage />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
           <Route
             path="/transactions"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <TransactionsHistoryPage />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
           <Route
             path="/cards"
             element={
-              <ProtectedRoute>
+              <OTPProtectedRoute>
                 <CardsPage />
-              </ProtectedRoute>
+              </OTPProtectedRoute>
             }
           />
 

@@ -15,6 +15,8 @@ const LogoutConfirmationModal = () => {
   const handleConfirm = async () => {
     try {
       await signOut(auth); // Firebase sign out
+      // Clear OTP verification status
+      localStorage.removeItem("otpVerified");
       setOpen(false);
       navigate("/"); // Redirect to login page
     } catch (error) {
@@ -33,8 +35,7 @@ const LogoutConfirmationModal = () => {
         onClick={handleOpen}
         sx={{
           color: "white",
-          
-    
+
           "&:hover": {
             backgroundColor: "#003B6A",
           },
@@ -44,7 +45,11 @@ const LogoutConfirmationModal = () => {
       </IconButton>
 
       {/* Modal */}
-      <Modal open={open} onClose={handleClose} aria-labelledby="logout-modal-title">
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="logout-modal-title"
+      >
         <Box
           sx={{
             position: "absolute",
@@ -58,7 +63,12 @@ const LogoutConfirmationModal = () => {
             borderRadius: 2,
           }}
         >
-          <Typography id="logout-modal-title" variant="h6" component="h2" color="#004D8E">
+          <Typography
+            id="logout-modal-title"
+            variant="h6"
+            component="h2"
+            color="#004D8E"
+          >
             Are you sure you want to log out?
           </Typography>
           <Box
