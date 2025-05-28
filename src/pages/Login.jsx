@@ -36,11 +36,14 @@ const LoginPage = () => {
         // Check the role of the authenticated user
         const userRole = userData.role; // Assuming role is stored in the user's Firestore document
 
+        // Clear any previous OTP verification status
+        localStorage.removeItem("otpVerified");
+
         // Redirect based on user role
         if (userRole === "admin") {
           navigate("/admin"); // Redirect to admin dashboard if the user is an admin
         } else if (userRole === "user") {
-          navigate("/dashboard"); // Redirect to regular user dashboard
+          navigate("/otp-verification"); // Redirect to OTP verification for regular users
         } else {
           setErrorMessage("Role not recognized.");
           console.error("Role not recognized.");
