@@ -69,18 +69,18 @@ const LoginPage = () => {
   return (
     <div className="flex font-lato flex-col md:flex-row h-screen relative overflow-x-hidden">
       {/* Left Section */}
-      <div className="flex-1  bg-customColor  flex flex-col items-center justify-center  relative md:relative">
+      <div className="flex-1  bg-white  flex flex-col items-center justify-center  relative md:relative">
         <div className="hidden md:block">
           <Logo style={{ width: "300px", height: "150px" }} />
         </div>
         <div className="md:block hidden">
-          <h1 className="text-white text-4xl font-bold mt-4">
+          <h1 className="text-gray-600 text-4xl font-bold mt-4">
             Welcome to Quant Equity Bank
           </h1>
-          <p className="text-white text-lg mt-2 mb-6">
+          <p className="text-gray-600 text-lg mt-2 mb-6">
             Discover endless possibilities with us.
           </p>
-          <div className="grid grid-cols-3 gap-6 text-white">
+          <div className="gridd grid-cols-3 gap-6 text-gray-600 hidden">
             <div className="flex flex-col items-center">
               <img
                 src="/Svg/save-money-cash-savings-money-reserve-svgrepo-com.svg"
@@ -110,9 +110,9 @@ const LoginPage = () => {
         {/* Form for Mobile */}
         <div className="flex z-10 flex-col items-center justify-center md:hidden flex-grow">
           {/* Logo and Welcome Text */}
-          <div className="text-center mb-8">
-            <Logo style={{ width: "180px", height: "100px" }} />
-            <h1 className="text-white text-2xl font-bold mt-2">
+          <div className="text-center mb-8 w-full">
+            <Logo />
+            <h1 className="text-gray-600 text-2xl font-bold mt-2">
               Welcome to Quant Equity Bank
             </h1>
           </div>
@@ -124,7 +124,7 @@ const LoginPage = () => {
             <input
               type="text"
               id="UserIdM"
-              className="w-full px-3 py-2 text-white border-b-2 border-blue-300 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              className="w-full px-3 py-2 text-gray-600 border-b-2 border-blue-300 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
               placeholder="User ID"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
@@ -132,7 +132,7 @@ const LoginPage = () => {
             <input
               type="password"
               id="passwordM"
-              className="w-full px-3 py-2 text-white border-b-2 border-blue-300 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+              className="w-full px-3 py-2 text-gray-600 border-b-2 border-blue-300 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -144,7 +144,7 @@ const LoginPage = () => {
                 id="rememberMeM"
                 className="w-4 h-4 bg-transparent border-2 border-gray-300 rounded-sm checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-600"
               />
-              <label htmlFor="rememberMe" className="text-white text-sm">
+              <label htmlFor="rememberMe" className="text-gray-600 text-sm">
                 Remember My User ID
               </label>
             </div>
