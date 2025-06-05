@@ -78,50 +78,24 @@ const CardDetailsPage = () => {
   const cardTypeInfo =
     cardTypes.find((c) => c.type === card.cardType) || cardTypes[0];
 
-  // Mock transaction data - in a real app, this would come from the database
-  const mockTransactions = [
-    {
-      id: 1,
-      merchant: "Amazon",
-      amount: "$42.99",
-      date: "2023-06-15",
-      type: "purchase",
-    },
-    {
-      id: 2,
-      merchant: "Starbucks",
-      amount: "$5.75",
-      date: "2023-06-14",
-      type: "purchase",
-    },
-    {
-      id: 3,
-      merchant: "ATM Withdrawal",
-      amount: "$200.00",
-      date: "2023-06-10",
-      type: "withdrawal",
-    },
-    {
-      id: 4,
-      merchant: "Target",
-      amount: "$67.32",
-      date: "2023-06-08",
-      type: "purchase",
-    },
-    {
-      id: 5,
-      merchant: "Netflix",
-      amount: "$14.99",
-      date: "2023-06-05",
-      type: "subscription",
-    },
-  ];
+  // Get real transaction data from Firebase
+  const cardTransactions = (user?.transactions || []).filter(transaction => {
+    // Filter transactions related to this card if card number is available
+    // For now, we'll show all transactions since card-specific filtering would need additional data structure
+    return true;
+  }).map((transaction, index) => ({
+    id: transaction.id || index + 1,
+    merchant: transaction.description || transaction.paymentName || transaction.recipient || "Unknown Merchant",
+    amount: `$${Math.abs(transaction.amount).toFixed(2)}`,
+    date: new Date(transaction.date).toLocaleDateString(),
+    type: transaction.type || (transaction.amount < 0 ? "purchase" : "deposit"),
+  }));
 
   // Filter transactions based on active tab
   const filteredTransactions =
     activeTransactionTab === "all"
-      ? mockTransactions
-      : mockTransactions.filter((t) => t.type === activeTransactionTab);
+      ? cardTransactions
+      : cardTransactions.filter((t) => t.type === activeTransactionTab);
 
   return (
     <div className="bg-gray-100 font-lato min-h-screen flex flex-col">
