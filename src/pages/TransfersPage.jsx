@@ -10,7 +10,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import Select from "react-select";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../Firebase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 // Mock bank data with logos
@@ -173,6 +173,7 @@ const mockBankData = [
 
 const TransfersPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBank, setSelectedBank] = useState(null);
   const [routineNumber, setRoutineNumber] = useState("");
@@ -382,6 +383,11 @@ const TransfersPage = () => {
     setTransferType("immediate");
     setScheduledDate(new Date());
     setTransferNote("");
+  };
+
+  const handleDone = () => {
+    closeModal();
+    navigate("/transactions");
   };
 
   const bankOptions = mockBankData.map((bank) => ({
@@ -1061,7 +1067,7 @@ const TransfersPage = () => {
                             maxLength="4"
                             inputMode="numeric"
                           />
-                          <p className="text-xs hidden text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             For testing, use PIN: 4456
                           </p>
                         </div>
@@ -1185,10 +1191,11 @@ const TransfersPage = () => {
                         <div className="flex justify-between">
                           <span>Transaction ID</span>
                           <span className="text-gray-800">
-                            {Math.random()
-                              .toString(36)
-                              .substr(2, 9)
-                              .toUpperCase()}
+                            {transactionId ||
+                              Math.random()
+                                .toString(36)
+                                .substr(2, 9)
+                                .toUpperCase()}
                           </span>
                         </div>
                         {transferNote && (
@@ -1204,7 +1211,7 @@ const TransfersPage = () => {
                       <div className="flex space-x-3 mt-6">
                         <button
                           className="flex-1 bg-customColor hover:bg-blue-700 text-white font-medium py-2.5 rounded-md transition-colors"
-                          onClick={closeModal}
+                          onClick={handleDone}
                         >
                           Done
                         </button>

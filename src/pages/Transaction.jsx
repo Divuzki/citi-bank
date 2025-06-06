@@ -1,35 +1,21 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Header } from "../Components/Header";
+import { Footer } from "../Components/Footer";
 import { useAuth } from "../context/AuthContext";
-import LoadingSpinner from "../Components/LoadingSpinner";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import GetAppIcon from "@mui/icons-material/GetApp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import PaymentIcon from "@mui/icons-material/Payment";
-import ReceiptIcon from "@mui/icons-material/Receipt";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import PieChartIcon from "@mui/icons-material/PieChart";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SwapVertIcon from "@mui/icons-material/SwapVert";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
-import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
-import HomeIcon from "@mui/icons-material/Home";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Link } from "react-router-dom";
 
 const TransactionsHistoryPage = () => {
   const { user, loading } = useAuth();
-  const [transactionsToShow, setTransactionsToShow] = useState(6);
+  const [transactionsToShow, setTransactionsToShow] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -37,875 +23,735 @@ const TransactionsHistoryPage = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [expandedTransaction, setExpandedTransaction] = useState(null);
-  const [sortOrder, setSortOrder] = useState("newest");
-  const [viewMode, setViewMode] = useState("list"); // list, analytics
-  const [selectedPeriod, setSelectedPeriod] = useState("month"); // week, month, year
+  const [sortOrder, setSortOrder] = useState("newest"); // newest or oldest
+  const [viewMode, setViewMode] = useState("all"); // all, income, expenses
+  const [selectedPeriod, setSelectedPeriod] = useState("all"); // all, today, week, month, year
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-white">
-        <h2 className="text-xl text-red-500">User not authenticated!</h2>
-      </div>
-    );
-  }
-
-  // Category mapping function
+  // Function to determine category based on transaction description
   const getCategoryFromDescription = (description) => {
-    const desc = description?.toLowerCase() || "";
+    description = description.toLowerCase();
+
     if (
-      desc.includes("grocery") ||
-      desc.includes("supermarket") ||
-      desc.includes("walmart") ||
-      desc.includes("target")
-    )
+      description.includes("coffee") ||
+      description.includes("restaurant") ||
+      description.includes("cafe") ||
+      description.includes("food") ||
+      description.includes("dinner")
+    ) {
+      return "food";
+    } else if (
+      description.includes("uber") ||
+      description.includes("lyft") ||
+      description.includes("taxi") ||
+      description.includes("transport") ||
+      description.includes("metro") ||
+      description.includes("subway")
+    ) {
+      return "transportation";
+    } else if (
+      description.includes("amazon") ||
+      description.includes("walmart") ||
+      description.includes("target") ||
+      description.includes("purchase") ||
+      description.includes("buy") ||
+      description.includes("shop")
+    ) {
       return "shopping";
-    if (
-      desc.includes("restaurant") ||
-      desc.includes("food") ||
-      desc.includes("cafe") ||
-      desc.includes("pizza")
-    )
-      return "dining";
-    if (
-      desc.includes("gas") ||
-      desc.includes("fuel") ||
-      desc.includes("shell") ||
-      desc.includes("exxon")
-    )
-      return "fuel";
-    if (
-      desc.includes("rent") ||
-      desc.includes("mortgage") ||
-      desc.includes("utilities") ||
-      desc.includes("electric")
-    )
-      return "housing";
-    if (
-      desc.includes("transfer") ||
-      desc.includes("deposit") ||
-      desc.includes("withdrawal")
-    )
+    } else if (
+      description.includes("bill") ||
+      description.includes("utility") ||
+      description.includes("electric") ||
+      description.includes("water") ||
+      description.includes("gas") ||
+      description.includes("internet") ||
+      description.includes("phone")
+    ) {
+      return "bills";
+    } else if (
+      description.includes("salary") ||
+      description.includes("paycheck") ||
+      description.includes("deposit") ||
+      description.includes("income")
+    ) {
+      return "income";
+    } else if (
+      description.includes("transfer") ||
+      description.includes("bank") ||
+      description.includes("account")
+    ) {
       return "banking";
+    } else if (
+      description.includes("entertainment") ||
+      description.includes("movie") ||
+      description.includes("netflix") ||
+      description.includes("spotify") ||
+      description.includes("subscription")
+    ) {
+      return "entertainment";
+    } else if (
+      description.includes("health") ||
+      description.includes("doctor") ||
+      description.includes("pharmacy") ||
+      description.includes("medicine") ||
+      description.includes("hospital")
+    ) {
+      return "health";
+    }
+
     return "other";
   };
 
-  // Enhanced transactions with categories and data validation
-  const enhancedTransactions = (user.transactions || []).map((transaction) => ({
-    ...transaction,
-    // Ensure all required fields have default values
-    id: transaction.id || Math.random().toString(36).substr(2, 9),
-    date: transaction.date || new Date().toISOString(),
-    amount: typeof transaction.amount === 'number' ? transaction.amount : 0,
-    description: transaction.description || transaction.paymentName || transaction.recipient || 'Unknown Transaction',
-    type: transaction.type || (transaction.amount < 0 ? 'expense' : 'income'),
-    status: transaction.status || 'completed',
-    category: transaction.category || getCategoryFromDescription(transaction.description || transaction.paymentName || ''),
-    recipientBank: transaction.recipientBank || '',
-    recipientName: transaction.recipientName || transaction.recipient || '',
-  }));
+  // Enhance transactions with default values and categories
+  const enhanceTransactions = (transactions) => {
+    if (!transactions) return [];
 
-  // Sort transactions by date (newest first by default)
-  const sortedTransactions = [...enhancedTransactions].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-  });
-
-  // Apply filters
-  const filteredTransactions = sortedTransactions.filter((transaction) => {
-    // Filter by type
-    if (selectedType !== "all" && transaction.type !== selectedType) {
-      return false;
-    }
-
-    // Filter by category
-    if (
-      selectedCategory !== "all" &&
-      transaction.category !== selectedCategory
-    ) {
-      return false;
-    }
-
-    // Filter by date range
-    if (startDate && endDate) {
-      const transactionDate = new Date(transaction.date);
-      if (transactionDate < startDate || transactionDate > endDate) {
-        return false;
+    return transactions.map((transaction) => {
+      // Ensure all transactions have a category
+      if (!transaction.category) {
+        transaction.category = getCategoryFromDescription(
+          transaction.description || ""
+        );
       }
-    }
 
-    // Filter by search query
+      // Ensure all transactions have a type (income or expense)
+      if (!transaction.type) {
+        transaction.type = transaction.amount > 0 ? "income" : "expense";
+      }
+
+      return transaction;
+    });
+  };
+
+  // Filter and sort transactions based on user selections
+  useEffect(() => {
+    if (!user || !user.transactions) return;
+
+    let filtered = [...enhanceTransactions(user.transactions)];
+
+    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return (
-        transaction.description?.toLowerCase().includes(query) ||
-        transaction.recipientBank?.toLowerCase().includes(query) ||
-        transaction.recipientName?.toLowerCase().includes(query) ||
-        transaction.type?.toLowerCase().includes(query) ||
-        transaction.status?.toLowerCase().includes(query) ||
-        transaction.category?.toLowerCase().includes(query) ||
-        String(Math.abs(transaction.amount)).includes(query)
+      filtered = filtered.filter(
+        (t) =>
+          (t.description && t.description.toLowerCase().includes(query)) ||
+          (t.recipientName && t.recipientName.toLowerCase().includes(query)) ||
+          (t.category && t.category.toLowerCase().includes(query))
       );
     }
 
-    return true;
-  });
-
-  // Analytics calculations
-  const analytics = useMemo(() => {
-    const now = new Date();
-    let periodStart;
-
-    switch (selectedPeriod) {
-      case "week":
-        periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case "year":
-        periodStart = new Date(now.getFullYear(), 0, 1);
-        break;
-      default: // month
-        periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Apply type filter
+    if (selectedType !== "all") {
+      filtered = filtered.filter((t) => t.type === selectedType);
     }
 
-    const periodTransactions = enhancedTransactions.filter(
-      (t) => new Date(t.date) >= periodStart && new Date(t.date) <= now
-    );
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((t) => t.category === selectedCategory);
+    }
 
-    const totalIncome = periodTransactions
-      .filter((t) => t.amount > 0)
-      .reduce((sum, t) => sum + t.amount, 0);
+    // Apply date range filter
+    if (startDate && endDate) {
+      filtered = filtered.filter((t) => {
+        const transactionDate = new Date(t.date);
+        return transactionDate >= startDate && transactionDate <= endDate;
+      });
+    }
 
-    const totalExpenses = periodTransactions
-      .filter((t) => t.amount < 0)
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    // Apply view mode filter
+    if (viewMode === "income") {
+      filtered = filtered.filter((t) => t.amount > 0);
+    } else if (viewMode === "expenses") {
+      filtered = filtered.filter((t) => t.amount < 0);
+    }
 
-    const categorySpending = periodTransactions
-      .filter((t) => t.amount < 0)
-      .reduce((acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + Math.abs(t.amount);
-        return acc;
-      }, {});
+    // Apply period filter
+    if (selectedPeriod !== "all") {
+      const today = new Date();
+      let periodStartDate;
 
-    const topCategories = Object.entries(categorySpending)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5);
+      switch (selectedPeriod) {
+        case "today":
+          periodStartDate = new Date(today.setHours(0, 0, 0, 0));
+          filtered = filtered.filter(
+            (t) => new Date(t.date) >= periodStartDate
+          );
+          break;
+        case "week":
+          periodStartDate = new Date(today);
+          periodStartDate.setDate(today.getDate() - 7);
+          filtered = filtered.filter(
+            (t) => new Date(t.date) >= periodStartDate
+          );
+          break;
+        case "month":
+          periodStartDate = new Date(today);
+          periodStartDate.setMonth(today.getMonth() - 1);
+          filtered = filtered.filter(
+            (t) => new Date(t.date) >= periodStartDate
+          );
+          break;
+        case "year":
+          periodStartDate = new Date(today);
+          periodStartDate.setFullYear(today.getFullYear() - 1);
+          filtered = filtered.filter(
+            (t) => new Date(t.date) >= periodStartDate
+          );
+          break;
+        default:
+          break;
+      }
+    }
 
-    return {
-      totalIncome,
-      totalExpenses,
-      netFlow: totalIncome - totalExpenses,
-      categorySpending,
-      topCategories,
-      transactionCount: periodTransactions.length,
-    };
-  }, [enhancedTransactions, selectedPeriod]);
-
-  const showLoadMore = filteredTransactions.length > transactionsToShow;
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+    // Apply sort order
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
-  };
 
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
+    setTransactionsToShow(filtered);
+  }, [
+    user,
+    searchQuery,
+    selectedType,
+    selectedCategory,
+    startDate,
+    endDate,
+    sortOrder,
+    viewMode,
+    selectedPeriod,
+  ]);
+
+  // Calculate analytics
+  const calculateAnalytics = () => {
+    if (!transactionsToShow.length)
+      return { totalIncome: 0, totalExpenses: 0, categorySpending: {} };
+
+    let totalIncome = 0;
+    let totalExpenses = 0;
+    let categorySpending = {};
+
+    transactionsToShow.forEach((transaction) => {
+      if (transaction.amount > 0) {
+        totalIncome += transaction.amount;
+      } else {
+        totalExpenses += Math.abs(transaction.amount);
+
+        // Track spending by category
+        const category = transaction.category || "other";
+        if (!categorySpending[category]) {
+          categorySpending[category] = 0;
+        }
+        categorySpending[category] += Math.abs(transaction.amount);
+      }
     });
+
+    return { totalIncome, totalExpenses, categorySpending };
   };
 
-  const loadMoreTransactions = () => {
-    setTransactionsToShow((prev) => prev + 6);
-  };
+  const analytics = calculateAnalytics();
 
-  const toggleExpand = (index) => {
-    setExpandedTransaction(expandedTransaction === index ? null : index);
-  };
-
+  // Reset all filters
   const resetFilters = () => {
+    setSearchQuery("");
     setSelectedType("all");
     setSelectedCategory("all");
     setStartDate(null);
     setEndDate(null);
-    setSearchQuery("");
+    setSortOrder("newest");
+    setViewMode("all");
+    setSelectedPeriod("all");
   };
 
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case "shopping":
-        return <ShoppingCartIcon sx={{ color: "#10B981" }} />;
-      case "dining":
-        return <RestaurantIcon sx={{ color: "#F59E0B" }} />;
-      case "fuel":
-        return <LocalGasStationIcon sx={{ color: "#EF4444" }} />;
-      case "housing":
-        return <HomeIcon sx={{ color: "#8B5CF6" }} />;
-      case "banking":
-        return <AccountBalanceIcon sx={{ color: "#004D8E" }} />;
-      default:
-        return <MoreHorizIcon sx={{ color: "#6B7280" }} />;
-    }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const capitalizeFirst = (str) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  const getTransactionIcon = (type) => {
-    switch (type) {
-      case "transfer":
-        return <AccountBalanceIcon sx={{ color: "#004D8E" }} />;
-      case "payment":
-        return <PaymentIcon sx={{ color: "#004D8E" }} />;
-      case "deposit":
-        return <ReceiptIcon sx={{ color: "#004D8E" }} />;
-      case "withdrawal":
-        return <CreditCardIcon sx={{ color: "#004D8E" }} />;
-      default:
-        return <ReceiptIcon sx={{ color: "#004D8E" }} />;
-    }
-  };
-
-  const exportTransactions = () => {
-    // Create CSV content
-    const headers = ["Date", "Description", "Amount", "Type", "Status"];
-    const csvContent = [
-      headers.join(","),
-      ...filteredTransactions.map((t) => {
-        return [
-          formatDate(t.date),
-          `"${t.description}"`,
-          t.amount,
-          t.type,
-          t.status,
-        ].join(",");
-      }),
-    ].join("\n");
-
-    // Create a blob and download link
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `transactions_${new Date().toISOString().split("T")[0]}.csv`
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-customColor"></div>
+      </div>
     );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  }
 
-  return (
-    <div className="bg-gray-50 font-lato min-h-screen">
-      {/* Enhanced Header */}
-      <div className="bg-gradient-to-br from-customColor via-blue-700 to-blue-900 relative text-white">
-        <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-        <div className="relative z-10">
-          {/* Navigation */}
-          <div className="flex items-center justify-between p-4">
-            <Link
-              to="/dashboard"
-              className="text-white hover:text-blue-200 transition-colors"
-            >
-              <ArrowBackIcon sx={{ fontSize: 28 }} />
-            </Link>
-            <h1 className="text-xl font-semibold">Transaction History</h1>
-            <button
-              onClick={exportTransactions}
-              className="text-white hover:text-blue-200 transition-colors"
-            >
-              <GetAppIcon sx={{ fontSize: 24 }} />
-            </button>
-          </div>
-
-          {/* Account Summary */}
-          <div className="px-4 pb-6">
-            <div className="text-center mb-6">
-              <p className="text-blue-100 text-sm mb-1">
-                Savings Account {user.accountNumber?.slice(-10) || "9876543210"}
-              </p>
-              <h2 className="text-4xl font-bold mb-2">
-                {formatCurrency(user.balance || 0)}
-              </h2>
-              <p className="text-blue-100 text-sm">Available Balance</p>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-3 text-center">
-                <TrendingUpIcon
-                  className="mx-auto mb-1"
-                  sx={{ fontSize: 20 }}
-                />
-                <p className="text-xs text-blue-100">Income</p>
-                <p className="text-sm font-semibold">
-                  {formatCurrency(analytics.totalIncome)}
-                </p>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-3 text-center">
-                <TrendingDownIcon
-                  className="mx-auto mb-1"
-                  sx={{ fontSize: 20 }}
-                />
-                <p className="text-xs text-blue-100">Expenses</p>
-                <p className="text-sm font-semibold">
-                  {formatCurrency(analytics.totalExpenses)}
-                </p>
-              </div>
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-3 text-center">
-                <SwapVertIcon className="mx-auto mb-1" sx={{ fontSize: 20 }} />
-                <p className="text-xs text-blue-100">Net Flow</p>
-                <p
-                  className={`text-sm font-semibold ${
-                    analytics.netFlow >= 0 ? "text-green-200" : "text-red-200"
-                  }`}
-                >
-                  {formatCurrency(analytics.netFlow)}
-                </p>
-              </div>
-            </div>
-          </div>
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <p className="text-xl font-semibold text-gray-700 mb-4">
+            Please log in to view your transactions
+          </p>
+          <Link
+            to="/login"
+            className="bg-customColor text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Log In
+          </Link>
         </div>
       </div>
+    );
+  }
 
-      {/* View Toggle */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === "list"
-                  ? "bg-white text-customColor shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Transactions
-            </button>
-            <button
-              onClick={() => setViewMode("analytics")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === "analytics"
-                  ? "bg-white text-customColor shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Analytics
-            </button>
+  return (
+    <div className="bg-gray-100 font-lato min-h-screen flex flex-col">
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <div className="lg:ml-64 md:px-4 -mt-20 md:mt-0 z-20 flex-grow p-6">
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+              Transaction History
+            </h1>
+
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full md:w-auto">
+              {/* Search Bar */}
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  placeholder="Search transactions..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <SearchIcon
+                  className="absolute left-3 top-2.5 text-gray-400"
+                  fontSize="small"
+                />
+              </div>
+
+              {/* Filter Button */}
+              <button
+                className={`flex items-center justify-center px-4 py-2 border ${
+                  filterOpen
+                    ? "bg-blue-50 border-blue-500 text-blue-700"
+                    : "border-gray-300 text-gray-700"
+                } rounded-md hover:bg-gray-50`}
+                onClick={() => setFilterOpen(!filterOpen)}
+              >
+                <FilterListIcon fontSize="small" className="mr-1" />
+                Filters
+              </button>
+
+              {/* Sort Order Toggle */}
+              <button
+                className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                onClick={() =>
+                  setSortOrder(sortOrder === "newest" ? "oldest" : "newest")
+                }
+              >
+                {sortOrder === "newest" ? (
+                  <>
+                    <ArrowDownwardIcon fontSize="small" className="mr-1" />
+                    Newest
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpwardIcon fontSize="small" className="mr-1" />
+                    Oldest
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
-          {viewMode === "analytics" && (
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-customColor focus:border-transparent"
-            >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
+          {/* Filter Panel */}
+          {filterOpen && (
+            <div className="bg-gray-50 p-4 rounded-md mb-6 border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-gray-700">
+                  Filter Transactions
+                </h3>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setFilterOpen(false)}
+                >
+                  <CloseIcon fontSize="small" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Transaction Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Transaction Type
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                  >
+                    <option value="all">All Types</option>
+                    <option value="transfer">Transfers</option>
+                    <option value="payment">Payments</option>
+                    <option value="deposit">Deposits</option>
+                    <option value="withdrawal">Withdrawals</option>
+                  </select>
+                </div>
+
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="food">Food & Dining</option>
+                    <option value="transportation">Transportation</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="bills">Bills & Utilities</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="health">Health</option>
+                    <option value="banking">Banking</option>
+                    <option value="income">Income</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Time Period Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Time Period
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                    <option value="year">Last Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Date Range Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Custom Date Range
+                  </label>
+                  <div className="flex space-x-2">
+                    <div className="flex-1">
+                      <DatePicker
+                        selected={startDate}
+                        onChange={(date) => setStartDate(date)}
+                        selectsStart
+                        startDate={startDate}
+                        endDate={endDate}
+                        placeholderText="Start Date"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        dateFormat="MMM d, yyyy"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <DatePicker
+                        selected={endDate}
+                        onChange={(date) => setEndDate(date)}
+                        selectsEnd
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        placeholderText="End Date"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        dateFormat="MMM d, yyyy"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* View Mode Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    View Mode
+                  </label>
+                  <div className="flex space-x-2">
+                    <button
+                      className={`flex-1 py-2 px-4 rounded-md ${
+                        viewMode === "all"
+                          ? "bg-blue-100 text-blue-700 font-medium"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                      onClick={() => setViewMode("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`flex-1 py-2 px-4 rounded-md ${
+                        viewMode === "income"
+                          ? "bg-green-100 text-green-700 font-medium"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                      onClick={() => setViewMode("income")}
+                    >
+                      Income
+                    </button>
+                    <button
+                      className={`flex-1 py-2 px-4 rounded-md ${
+                        viewMode === "expenses"
+                          ? "bg-red-100 text-red-700 font-medium"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                      onClick={() => setViewMode("expenses")}
+                    >
+                      Expenses
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  className="px-4 py-2 text-gray-700 hover:text-gray-900 mr-2"
+                  onClick={resetFilters}
+                >
+                  Reset Filters
+                </button>
+                <button
+                  className="px-4 py-2 bg-customColor text-white rounded-md hover:bg-blue-700"
+                  onClick={() => setFilterOpen(false)}
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Analytics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Total Transactions */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-medium text-blue-700 mb-2">
+                Total Transactions
+              </h3>
+              <p className="text-2xl font-bold text-blue-800">
+                {transactionsToShow.length}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                {selectedPeriod === "all"
+                  ? "All time"
+                  : selectedPeriod === "today"
+                  ? "Today"
+                  : selectedPeriod === "week"
+                  ? "Last 7 days"
+                  : selectedPeriod === "month"
+                  ? "Last 30 days"
+                  : "Last year"}
+              </p>
+            </div>
+
+            {/* Total Income */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+              <h3 className="text-sm font-medium text-green-700 mb-2">
+                Total Income
+              </h3>
+              <p className="text-2xl font-bold text-green-800">
+                ${analytics.totalIncome.toFixed(2)}
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                {viewMode === "all"
+                  ? "All transactions"
+                  : viewMode === "income"
+                  ? "Income only"
+                  : ""}
+              </p>
+            </div>
+
+            {/* Total Expenses */}
+            <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+              <h3 className="text-sm font-medium text-red-700 mb-2">
+                Total Expenses
+              </h3>
+              <p className="text-2xl font-bold text-red-800">
+                ${analytics.totalExpenses.toFixed(2)}
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                {viewMode === "all"
+                  ? "All transactions"
+                  : viewMode === "expenses"
+                  ? "Expenses only"
+                  : ""}
+              </p>
+            </div>
+          </div>
+
+          {/* Transactions List */}
+          {transactionsToShow.length > 0 ? (
+            <div className="divide-y divide-gray-200">
+              {transactionsToShow.map((transaction, index) => (
+                <div key={index} className="py-4">
+                  <div
+                    className="flex justify-between items-center cursor-pointer"
+                    onClick={() =>
+                      setExpandedTransaction(
+                        expandedTransaction === index ? null : index
+                      )
+                    }
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+                          transaction.amount > 0 ? "bg-green-100" : "bg-red-100"
+                        }`}
+                      >
+                        {transaction.amount > 0 ? (
+                          <ArrowUpwardIcon
+                            sx={{ fontSize: 20, color: "#047857" }}
+                          />
+                        ) : (
+                          <ArrowDownwardIcon
+                            sx={{ fontSize: 20, color: "#b91c1c" }}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">
+                          {transaction.description || "Transaction"}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(transaction.date).toLocaleDateString(
+                            "en-US",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="text-right mr-3">
+                        <p
+                          className={`font-semibold ${
+                            transaction.amount > 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {transaction.amount > 0 ? "+" : ""}$
+                          {Math.abs(transaction.amount).toFixed(2)}
+                        </p>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getCategoryBadgeColor(
+                            transaction.category
+                          )}`}
+                        >
+                          {transaction.category || "other"}
+                        </span>
+                      </div>
+                      {expandedTransaction === index ? (
+                        <ExpandLessIcon sx={{ color: "#6b7280" }} />
+                      ) : (
+                        <ExpandMoreIcon sx={{ color: "#6b7280" }} />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expanded Transaction Details */}
+                  {expandedTransaction === index && (
+                    <div className="mt-3 pl-13 ml-10 border-l-2 border-gray-200">
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-gray-500">Transaction ID</p>
+                            <p className="font-mono">
+                              {transaction.id || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Type</p>
+                            <p className="capitalize">{transaction.type}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Status</p>
+                            <p>{transaction.status || "Completed"}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Category</p>
+                            <p className="capitalize">
+                              {transaction.category || "Other"}
+                            </p>
+                          </div>
+                          {transaction.recipientName && (
+                            <div>
+                              <p className="text-gray-500">Recipient</p>
+                              <p>{transaction.recipientName}</p>
+                            </div>
+                          )}
+                          {transaction.recipientBank && (
+                            <div>
+                              <p className="text-gray-500">Bank</p>
+                              <p>{transaction.recipientBank}</p>
+                            </div>
+                          )}
+                          {transaction.note && (
+                            <div className="col-span-2">
+                              <p className="text-gray-500">Note</p>
+                              <p>{transaction.note}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <SearchIcon sx={{ fontSize: 32, color: "#9CA3AF" }} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                No transactions found
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Try adjusting your filters or search criteria
+              </p>
+              <button
+                onClick={resetFilters}
+                className="bg-customColor text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Analytics View */}
-      {viewMode === "analytics" && (
-        <div className="p-4 space-y-6">
-          {/* Spending Overview */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Spending Overview</h3>
-              <PieChartIcon className="text-customColor" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-customColor">
-                  {analytics.transactionCount}
-                </p>
-                <p className="text-sm text-gray-600">Total Transactions</p>
-              </div>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-red-500">
-                  {formatCurrency(analytics.totalExpenses)}
-                </p>
-                <p className="text-sm text-gray-600">Total Spent</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Top Categories */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Top Spending Categories</h3>
-              <BarChartIcon className="text-customColor" />
-            </div>
-            <div className="space-y-3">
-              {analytics.topCategories.map(([category, amount], index) => {
-                const percentage = analytics.totalExpenses > 0 
-                  ? (amount / analytics.totalExpenses) * 100 
-                  : 0;
-                return (
-                  <div key={category} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        {getCategoryIcon(category)}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {capitalizeFirst(category)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {percentage.toFixed(1)}% of spending
-                        </p>
-                      </div>
-                    </div>
-                    <p className="font-semibold text-gray-900">
-                      {formatCurrency(amount)}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Transactions List View */}
-      {viewMode === "list" && (
-        <div className="p-4">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="bg-gray-50 px-6 py-4 border-b">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Transactions
-                </h2>
-                <button
-                  onClick={() =>
-                    setSortOrder(sortOrder === "newest" ? "oldest" : "newest")
-                  }
-                  className="flex items-center text-customColor hover:text-blue-700 text-sm font-medium transition-colors"
-                >
-                  {sortOrder === "newest" ? (
-                    <KeyboardArrowDownIcon fontSize="small" className="mr-1" />
-                  ) : (
-                    <KeyboardArrowUpIcon fontSize="small" className="mr-1" />
-                  )}
-                  {sortOrder === "newest" ? "Newest First" : "Oldest First"}
-                </button>
-              </div>
-            </div>
-
-            {/* Search and Filter Bar */}
-            <div className="px-6 py-4 border-b bg-white">
-              <div className="space-y-4">
-                {/* Search Bar */}
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fontSize="small" />
-                  <input
-                    type="text"
-                    placeholder="Search transactions, recipients, or amounts..."
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-customColor focus:border-transparent text-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-
-                {/* Quick Filters */}
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => setFilterOpen(!filterOpen)}
-                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterOpen 
-                        ? "bg-customColor text-white" 
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    <FilterListIcon fontSize="small" className="mr-2" />
-                    {filterOpen ? "Hide Filters" : "Show Filters"}
-                  </button>
-                  
-                  {(selectedType !== "all" || selectedCategory !== "all" || startDate || endDate || searchQuery) && (
-                    <button
-                      onClick={resetFilters}
-                      className="text-sm text-customColor hover:text-blue-700 font-medium"
-                    >
-                      Clear All Filters
-                    </button>
-                  )}
-                </div>
-
-                {/* Advanced Filters */}
-                {filterOpen && (
-                  <div className="bg-gray-50 p-4 rounded-xl space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {/* Transaction Type Filter */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Transaction Type
-                        </label>
-                        <select
-                          value={selectedType}
-                          onChange={(e) => setSelectedType(e.target.value)}
-                          className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-customColor focus:border-transparent"
-                        >
-                          <option value="all">All Types</option>
-                          <option value="transfer">Transfers</option>
-                          <option value="payment">Payments</option>
-                          <option value="deposit">Deposits</option>
-                          <option value="withdrawal">Withdrawals</option>
-                        </select>
-                      </div>
-
-                      {/* Category Filter */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Category
-                        </label>
-                        <select
-                          value={selectedCategory}
-                          onChange={(e) => setSelectedCategory(e.target.value)}
-                          className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-customColor focus:border-transparent"
-                        >
-                          <option value="all">All Categories</option>
-                          <option value="shopping">Shopping</option>
-                          <option value="dining">Dining</option>
-                          <option value="fuel">Fuel</option>
-                          <option value="housing">Housing</option>
-                          <option value="banking">Banking</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-
-                      {/* Date Range Filters */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Start Date
-                        </label>
-                        <div className="relative">
-                          <DatePicker
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date)}
-                            selectsStart
-                            startDate={startDate}
-                            endDate={endDate}
-                            placeholderText="Select start date"
-                            className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-customColor focus:border-transparent"
-                          />
-                          <CalendarTodayIcon
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                            fontSize="small"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          End Date
-                        </label>
-                        <div className="relative">
-                          <DatePicker
-                            selected={endDate}
-                            onChange={(date) => setEndDate(date)}
-                            selectsEnd
-                            startDate={startDate}
-                            endDate={endDate}
-                            minDate={startDate}
-                            placeholderText="Select end date"
-                            className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-customColor focus:border-transparent"
-                          />
-                          <CalendarTodayIcon
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                            fontSize="small"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Transaction List */}
-            <div className="px-6 py-4">
-              {filteredTransactions.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ReceiptIcon className="text-gray-400" sx={{ fontSize: 32 }} />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
-                  <p className="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-                  {(selectedType !== "all" ||
-                    selectedCategory !== "all" ||
-                    startDate ||
-                    endDate ||
-                    searchQuery) && (
-                    <button
-                      onClick={resetFilters}
-                      className="bg-customColor text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Clear All Filters
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredTransactions
-                    .slice(0, transactionsToShow)
-                    .map((transaction, index) => (
-                      <div
-                        key={index}
-                        className={`border border-gray-200 rounded-xl p-4 transition-all duration-200 hover:shadow-md ${
-                          expandedTransaction === index 
-                            ? "bg-blue-50 border-customColor shadow-md" 
-                            : "bg-white hover:bg-gray-50"
-                        }`}
-                      >
-                        <div
-                          className="flex justify-between items-start cursor-pointer"
-                          onClick={() => toggleExpand(index)}
-                        >
-                          <div className="flex items-start space-x-4">
-                            <div className="flex-shrink-0">
-                              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                                {getCategoryIcon(transaction.category)}
-                              </div>
-                            </div>
-                            <div className="flex-grow min-w-0">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <h4 className="font-medium text-gray-900 truncate">
-                                  {transaction.description}
-                                </h4>
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  {capitalizeFirst(transaction.category)}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-500 mb-1">
-                                {formatDate(transaction.date)} • {formatTime(transaction.date)}
-                              </p>
-                              {transaction.recipientBank && (
-                                <p className="text-sm text-gray-500">
-                                  {transaction.recipientBank}
-                                  {transaction.recipientAccount && (
-                                    <span className="ml-2">
-                                      ••••{transaction.recipientAccount.slice(-4)}
-                                    </span>
-                                  )}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end space-y-2">
-                            <p
-                              className={`text-lg font-semibold ${
-                                transaction.amount > 0
-                                  ? "text-green-600"
-                                  : "text-gray-900"
-                              }`}
-                            >
-                              {transaction.amount > 0 ? "+" : "-"}
-                              {formatCurrency(Math.abs(transaction.amount))}
-                            </p>
-                            <span
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                transaction.status === "Completed"
-                                  ? "bg-green-100 text-green-800"
-                                  : transaction.status === "Pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {transaction.status}
-                            </span>
-                            <button className="text-customColor hover:text-blue-700 transition-colors">
-                              {expandedTransaction === index ? (
-                                <KeyboardArrowUpIcon fontSize="small" />
-                              ) : (
-                                <KeyboardArrowDownIcon fontSize="small" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                         {/* Expanded Transaction Details */}
-                         {expandedTransaction === index && (
-                           <div className="mt-4 pt-4 border-t border-gray-200">
-                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                               {/* Transaction Info */}
-                               <div className="space-y-4">
-                                 <h4 className="font-semibold text-gray-900 flex items-center">
-                                    <ReceiptIcon className="mr-2 text-customColor" sx={{ fontSize: 18 }} />
-                                    Transaction Details
-                                  </h4>
-                                 <div className="space-y-3">
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Transaction ID</span>
-                                     <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                                       {transaction.id || `TRX${Math.floor(Math.random() * 1000000)}`}
-                                     </span>
-                                   </div>
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Category</span>
-                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                       {getCategoryIcon(transaction.category)}
-                                       <span className="ml-1">{capitalizeFirst(transaction.category)}</span>
-                                     </span>
-                                   </div>
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Type</span>
-                                     <span className="text-sm font-medium text-gray-900 capitalize">
-                                       {transaction.type}
-                                     </span>
-                                   </div>
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Status</span>
-                                     <span
-                                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                         transaction.status === "Completed"
-                                           ? "bg-green-100 text-green-800"
-                                           : transaction.status === "Pending"
-                                           ? "bg-yellow-100 text-yellow-800"
-                                           : "bg-red-100 text-red-800"
-                                       }`}
-                                     >
-                                       {transaction.status}
-                                     </span>
-                                   </div>
-                                 </div>
-                               </div>
-
-                               {/* Amount & Recipient */}
-                               <div className="space-y-4">
-                                 <h4 className="font-semibold text-gray-900 flex items-center">
-                                   <AccountBalanceIcon className="mr-2 text-customColor" sx={{ fontSize: 18 }} />
-                                   Payment Details
-                                 </h4>
-                                 <div className="space-y-3">
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Amount</span>
-                                     <span
-                                       className={`text-lg font-bold ${
-                                         transaction.amount > 0
-                                           ? "text-green-600"
-                                           : "text-gray-900"
-                                       }`}
-                                     >
-                                       {transaction.amount > 0 ? "+" : "-"}
-                                       {formatCurrency(Math.abs(transaction.amount))}
-                                     </span>
-                                   </div>
-                                   {transaction.recipientName && (
-                                     <div className="flex justify-between items-center">
-                                       <span className="text-sm text-gray-600">Recipient</span>
-                                       <span className="text-sm font-medium text-gray-900">
-                                         {transaction.recipientName}
-                                       </span>
-                                     </div>
-                                   )}
-                                   {transaction.recipientBank && (
-                                     <div className="flex justify-between items-center">
-                                       <span className="text-sm text-gray-600">Bank</span>
-                                       <span className="text-sm text-gray-900">
-                                         {transaction.recipientBank}
-                                       </span>
-                                     </div>
-                                   )}
-                                   {transaction.recipientAccount && (
-                                     <div className="flex justify-between items-center">
-                                       <span className="text-sm text-gray-600">Account</span>
-                                       <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                                         ••••{transaction.recipientAccount.slice(-4)}
-                                       </span>
-                                     </div>
-                                   )}
-                                 </div>
-                               </div>
-
-                               {/* Date & Notes */}
-                               <div className="space-y-4">
-                                 <h4 className="font-semibold text-gray-900 flex items-center">
-                                   <CalendarTodayIcon className="mr-2 text-customColor" sx={{ fontSize: 18 }} />
-                                   Additional Info
-                                 </h4>
-                                 <div className="space-y-3">
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Date</span>
-                                     <span className="text-sm text-gray-900">
-                                       {formatDate(transaction.date)}
-                                     </span>
-                                   </div>
-                                   <div className="flex justify-between items-center">
-                                     <span className="text-sm text-gray-600">Time</span>
-                                     <span className="text-sm text-gray-900">
-                                       {formatTime(transaction.date)}
-                                     </span>
-                                   </div>
-                                   {transaction.note && (
-                                     <div className="pt-2">
-                                       <span className="text-sm text-gray-600 block mb-2">Notes</span>
-                                       <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
-                                         {transaction.note}
-                                       </p>
-                                     </div>
-                                   )}
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            {/* Load More Button */}
-            {showLoadMore && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <button
-                  onClick={loadMoreTransactions}
-                  className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
-                >
-                  <span className="flex items-center justify-center">
-                    <KeyboardArrowDownIcon className="mr-2" />
-                    Load More Transactions
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        )}
-     
-
-      {/* Enhanced Filter Button */}
-      <button
-        onClick={() => setFilterOpen(!filterOpen)}
-        className="fixed bottom-6 right-6 bg-customColor hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-      >
-        <FilterListIcon sx={{ fontSize: 24 }} />
-      </button>
+      {/* Footer */}
+      <Footer />
     </div>
   );
+};
+
+// Helper function to get badge color based on category
+const getCategoryBadgeColor = (category) => {
+  switch (category) {
+    case "food":
+      return "bg-yellow-100 text-yellow-800";
+    case "transportation":
+      return "bg-blue-100 text-blue-800";
+    case "shopping":
+      return "bg-purple-100 text-purple-800";
+    case "bills":
+      return "bg-gray-100 text-gray-800";
+    case "entertainment":
+      return "bg-pink-100 text-pink-800";
+    case "health":
+      return "bg-green-100 text-green-800";
+    case "banking":
+      return "bg-indigo-100 text-indigo-800";
+    case "income":
+      return "bg-emerald-100 text-emerald-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
 };
 
 export default TransactionsHistoryPage;
