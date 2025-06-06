@@ -179,7 +179,7 @@ export const ActionButtons = () => {
       </div>
 
       {/* Developer toggle for transaction outcomes - only visible in development */}
-      <div className="fixed bottom-4 right-4 bg-gray-800 text-white p-2 rounded-lg shadow-lg z-50 text-xs">
+      <div className="fixedd hidden bottom-4 right-4 bg-gray-800 text-white p-2 rounded-lg shadow-lg z-50 text-xs">
         <div className="flex items-center space-x-2">
           <span>Transaction Mode:</span>
           <button
