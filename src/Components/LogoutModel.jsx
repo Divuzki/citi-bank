@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Modal, Box, Typography, IconButton, Button } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { getAuth, signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 const LogoutConfirmationModal = () => {
   const [open, setOpen] = useState(false);
   const auth = getAuth(); // Initialize Firebase Auth
-  const navigate = useNavigate(); // React Router's navigation hook
+  // const navigate = useNavigate(); // React Router's navigation hook
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -18,7 +18,8 @@ const LogoutConfirmationModal = () => {
       // Clear OTP verification status
       localStorage.removeItem("otpVerified");
       setOpen(false);
-      navigate("/"); // Redirect to login page
+      // navigate("/"); // Redirect to login page
+      window.location.href = "https://www.quantequitybank.com/";
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
