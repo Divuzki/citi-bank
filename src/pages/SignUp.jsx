@@ -132,6 +132,10 @@ const SignupPage = () => {
 
     setLoading(true);
 
+    // Generate unique user ID
+    let userId = formData.email;
+    let isUnique = false;
+
     try {
       // Check if email already exists
       const emailQuery = query(
@@ -163,10 +167,6 @@ const SignupPage = () => {
         formData.password
       );
       const user = userCredential.user;
-
-      // Generate unique user ID
-      let userId;
-      let isUnique = false;
 
       while (!isUnique) {
         userId = formData.email;
