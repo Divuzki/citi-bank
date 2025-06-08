@@ -13,7 +13,6 @@ const s3 = new AWS.S3({
 });
 
 export const uploadToS3 = async (file, fileName) => {
-  console.log(process.env.REACT_APP_S3_BUCKET_NAME);
   const params = {
     Bucket: process.env.REACT_APP_S3_BUCKET_NAME,
     Key: `profile-images/${fileName}`,
