@@ -2,9 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import SignIn from "./pages/SignIn";
 import OTPVerification from "./pages/OTPVerification";
-import ProtectedRoute from "./Components/ProtectedRoute"; // Import the ProtectedRoute component
 import OTPProtectedRoute from "./Components/OTPProtectedRoute"; // Import the OTPProtectedRoute component
 import AccountsPage from "./pages/Accounts";
 import TransfersPage from "./pages/TransfersPage";
@@ -12,6 +10,7 @@ import PaymentsPage from "./pages/Payments";
 import TransactionsHistoryPage from "./pages/Transaction";
 import AdminPage from "./pages/AdminPage";
 import CardsPage from "./pages/Cards";
+import SignUp from "./pages/Signup";
 
 function App() {
   return (
@@ -20,6 +19,7 @@ function App() {
         <Routes>
           {/* Define the route for the login page */}
           <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
           {/* OTP Verification Route */}
           <Route path="/otp-verification" element={<OTPVerification />} />
@@ -77,7 +77,7 @@ function App() {
           {/* Admin Route */}
           <Route path="/admin" element={<AdminPage />} />
 
-          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
 
           {/* Default Route */}
 

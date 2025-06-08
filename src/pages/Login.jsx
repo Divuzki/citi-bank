@@ -237,13 +237,13 @@ const LoginPage = () => {
             )}
           </form>
           {/* Links Section */}
-          <div className="jflex justify-between hidden items-center mt-4 text-sm">
+          <div className="flex justify-between hiidden items-center mt-4 text-sm">
             {/* Register / Activate */}
-            <a href="/register" className="text-blue-600 hover:underline">
+            <a href="/signup" className="text-blue-600 hover:underline">
               Register / Activate
             </a>
             {/* Forgot User ID or Password */}
-            <a href="/forgot" className="text-blue-600 hover:underline">
+            <a href="/forgot" className="text-blue-600 hidden hover:underline">
               Forgot User ID or Password?
             </a>
           </div>
