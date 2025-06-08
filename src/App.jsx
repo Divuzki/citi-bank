@@ -10,7 +10,7 @@ import PaymentsPage from "./pages/Payments";
 import TransactionsHistoryPage from "./pages/Transaction";
 import AdminPage from "./pages/AdminPage";
 import CardsPage from "./pages/Cards";
-import SignUp from "./pages/Signup";
+import Signup from "./pages/Signup";
 
 function App() {
   return (
@@ -49,14 +49,14 @@ function App() {
               </OTPProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/payments"
             element={
               <OTPProtectedRoute>
                 <PaymentsPage />
               </OTPProtectedRoute>
             }
-          /> */}
+          />
           <Route
             path="/transactions"
             element={
@@ -77,7 +77,7 @@ function App() {
           {/* Admin Route */}
           <Route path="/admin" element={<AdminPage />} />
 
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signup" element={<Signup />} />
 
           {/* Default Route */}
 
