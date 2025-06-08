@@ -49,14 +49,14 @@ function App() {
               </OTPProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/payments"
             element={
               <OTPProtectedRoute>
                 <PaymentsPage />
               </OTPProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/transactions"
             element={
