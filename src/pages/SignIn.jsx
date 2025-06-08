@@ -5,11 +5,12 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, app } from "../../Firebase";
 import {
   collection,
-  addDoc,
   query,
   where,
   getDocs,
   getFirestore,
+  setDoc,
+  doc,
 } from "firebase/firestore";
 import { uploadToS3 } from "../config/awsConfig";
 
@@ -141,10 +142,6 @@ const SignIn = () => {
 
     setLoading(true);
 
-    // Generate unique user ID
-    let userId = formData.email;
-    let isUnique = false;
-
     try {
       // Check if email already exists
       const emailQuery = query(
@@ -159,6 +156,17 @@ const SignIn = () => {
         return;
       }
 
+      // Create user with Firebase Auth first
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // Generate unique user ID using email as identifier
+      const userId = formData.email;
+
       // Upload profile image if provided
       let profileImageURL = null;
 
@@ -169,31 +177,13 @@ const SignIn = () => {
         );
       }
 
-      // Create user with Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-      const user = userCredential.user;
-
-      while (!isUnique) {
-        userId = formData.email;
-        const userIdQuery = query(
-          collection(db, "users"),
-          where("identifier", "==", userId)
-        );
-        const userIdSnapshot = await getDocs(userIdQuery);
-        isUnique = userIdSnapshot.empty;
-      }
-
-      // Save user data to Firestore
-      await addDoc(collection(db, "users"), {
+      // Save user data to Firestore using the user's UID as document ID
+      await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        identifier: userId,
-        email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
+        identifier: userId,
         phoneNumber: formData.phoneNumber,
         dateOfBirth: formData.dateOfBirth,
         address: formData.address,
@@ -210,6 +200,8 @@ const SignIn = () => {
         accountStatus: "Active",
         createdAt: new Date().toISOString(),
         lastLogin: null,
+        transactions: [],
+        cards: [],
       });
 
       setSuccessMessage(
