@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../svg/Logo";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../Firebase";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { auth, app } from "../../Firebase";
+import { collection, addDoc, query, where, getDocs, getFirestore } from "firebase/firestore";
 import { uploadToS3 } from "../config/awsConfig";
 
 const SignupPage = () => {
@@ -27,6 +27,8 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
+
+  const db = getFirestore(app);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
