@@ -6,7 +6,7 @@ import { auth, db } from "../../Firebase";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { uploadToS3 } from "../config/awsConfig";
 
-const Signup = () => {
+const SignupPage = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -687,4 +687,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default SignupPage;

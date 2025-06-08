@@ -10,7 +10,7 @@ import PaymentsPage from "./pages/Payments";
 import TransactionsHistoryPage from "./pages/Transaction";
 import AdminPage from "./pages/AdminPage";
 import CardsPage from "./pages/Cards";
-import Signup from "./pages/Signup";
+import SignupPage from "./pages/Signup";
 
 function App() {
   return (
@@ -77,7 +77,7 @@ function App() {
           {/* Admin Route */}
           <Route path="/admin" element={<AdminPage />} />
 
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<SignupPage />} />
 
           {/* Default Route */}
 
