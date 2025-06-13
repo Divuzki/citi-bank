@@ -53,7 +53,6 @@ export const ActionButtons = () => {
   ];
 
   const handleActionClick = (action) => {
-    console.log(action);
     setSelectedAction(action);
     setShowTransactionModal(true);
     setError("");
