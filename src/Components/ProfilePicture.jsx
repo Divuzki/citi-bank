@@ -19,7 +19,7 @@ export const ProfilePicture = () => {
     );
   }
   return (
-    <div className="relative md:hidden  flex flex-col items-center justify-center -mt-16">
+    <div className="relative md:hidden  flex flex-col items-center justify-center sm:-mt-16 mt-0">
       <div className="w-24 h-24 border-2 rounded-full shadow-lg flex justify-center items-center">
         <img
           src={user.imageUrl || "/Image/new.jpeg"}
