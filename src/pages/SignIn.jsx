@@ -208,9 +208,12 @@ const SignIn = () => {
         `Account created successfully! Your User ID is: ${userId}`
       );
 
-      // Redirect to login page after 3 seconds
+      // Clear any previous OTP verification status
+      localStorage.removeItem("otpVerified");
+
+      // Redirect to OTP verification after 3 seconds
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/otp-verification");
       }, 3000);
     } catch (error) {
       console.error("Error during sign up:", error);

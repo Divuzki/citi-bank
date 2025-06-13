@@ -24,31 +24,47 @@ export const ActionButtons = () => {
   const actions = [
     {
       name: "Wire Transfer",
+      description: "Send money to other banks",
       icon: "Svg/cash-svgrepo-com.svg",
       minAmount: 100,
       maxAmount: 50000,
       component: WireTransferForm,
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-600"
     },
     {
       name: "Pay Bills",
+      description: "Utilities, credit cards & more",
       icon: "Svg/bill-list-svgrepo-com.svg",
       minAmount: 10,
       maxAmount: 10000,
       component: BillPaymentForm,
+      color: "from-green-500 to-green-600",
+      bgColor: "bg-green-50",
+      textColor: "text-green-600"
     },
     {
       name: "Buy Crypto",
+      description: "Invest in cryptocurrency",
       icon: "Svg/buy-crypto-svgrepo-com.svg",
       minAmount: 50,
       maxAmount: 25000,
       component: CryptoTradeForm,
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-600"
     },
     {
       name: "Deposit Funds",
+      description: "Add money to your account",
       icon: "Svg/atm-deposit-svgrepo-com.svg",
       minAmount: 10,
       maxAmount: 100000,
       component: DepositForm,
+      color: "from-orange-500 to-orange-600",
+      bgColor: "bg-orange-50",
+      textColor: "text-orange-600"
     },
   ];
 
@@ -160,69 +176,49 @@ export const ActionButtons = () => {
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white rounded-md shadow-md mx-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {actions.map((action, index) => (
           <button
             key={index}
             onClick={() => handleActionClick(action)}
-            className="p-4 text-center rounded-lg shadow-sm flex flex-col items-center justify-center hover:bg-gray-50 transition-all duration-300"
+            className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 text-left overflow-hidden"
           >
-            <img
-              src={action.icon}
-              alt={`${action.name} icon`}
-              className="w-10 h-10 mb-2"
-            />
-            <p className="text-sm whitespace-nowrap">{action.name}</p>
-          </button>
-        ))}
-      </div>
+            {/* Background gradient overlay */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
+            ></div>
 
-      {/* Developer toggle for transaction outcomes - only visible in development */}
-      <div className="fixedd hidden bottom-4 right-4 bg-gray-800 text-white p-2 rounded-lg shadow-lg z-50 text-xs">
-        <div className="flex items-center space-x-2">
-          <span>Transaction Mode:</span>
-          <button
-            onClick={() => setAllowTransactions(!allowTransactions)}
-            className={`px-2 py-1 rounded ${
-              allowTransactions ? "bg-green-500" : "bg-red-500"
-            }`}
-          >
-            {allowTransactions ? "Success" : "Decline"}
-          </button>
-          <div
-            className={`w-2 h-2 rounded-full ${
-              allowTransactions
-                ? "bg-green-500 animate-pulse"
-                : "bg-red-500 animate-pulse"
-            }`}
-          ></div>
-        </div>
-        <div className="text-gray-300 text-xs mt-1">
-          {allowTransactions
-            ? "Transactions will succeed"
-            : "Transactions will be declined"}
-        </div>
-      </div>
-      {showTransactionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl transform transition-all duration-300 animate-fadeIn">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {selectedAction.name}
-              </h2>
-              <button
-                onClick={() => setShowTransactionModal(false)}
-                className="text-gray-500 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
-              >
-                ✕
-              </button>
+            {/* Icon container */}
+            <div
+              className={`${action.bgColor} w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+            >
+              <img
+                src={action.icon}
+                alt={`${action.name} icon`}
+                className="w-7 h-7"
+              />
             </div>
 
-            {success ? (
-              <div className="text-center py-6 transform transition-all duration-500 animate-fadeIn">
-                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
+            {/* Content */}
+            <div className="relative z-10">
+              <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-gray-800">
+                {action.name}
+              </h3>
+              <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                {action.description}
+              </p>
+
+              {/* Amount range */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  ${action.minAmount.toLocaleString()} - $
+                  {action.maxAmount.toLocaleString()}
+                </span>
+                <div
+                  className={`w-6 h-6 rounded-full ${action.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                >
                   <svg
-                    className="w-10 h-10 text-white"
+                    className={`w-3 h-3 ${action.textColor}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -231,23 +227,77 @@ export const ActionButtons = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M5 13l4 4L19 7"
+                      d="M9 5l7 7-7 7"
                     />
                   </svg>
                 </div>
-                <p className="text-2xl font-bold text-gray-800 mb-2">
-                  Transaction Successful!
-                </p>
-                <p className="text-md text-gray-600 max-w-xs mx-auto">
-                  Your {selectedAction.name.toLowerCase()} has been processed
-                  successfully.
-                </p>
               </div>
-            ) : showDeclineModal ? (
-              <div className="text-center py-6 transform transition-all duration-500 animate-fadeIn">
-                <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-shake">
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Developer toggle for transaction outcomes - only visible in development */}
+      <div className="fixed hidden bottom-6 right-6 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-50 text-sm max-w-xs">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-medium text-gray-700">Dev Mode</span>
+          <div
+            className={`w-3 h-3 rounded-full ${
+              allowTransactions ? "bg-green-500" : "bg-red-500"
+            } animate-pulse`}
+          ></div>
+        </div>
+        <div className="space-y-2">
+          <button
+            onClick={() => setAllowTransactions(!allowTransactions)}
+            className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              allowTransactions
+                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                : "bg-red-100 text-red-700 hover:bg-red-200"
+            }`}
+          >
+            {allowTransactions ? "✓ Success Mode" : "✗ Decline Mode"}
+          </button>
+          <p className="text-xs text-gray-500 text-center">
+            {allowTransactions
+              ? "Transactions will succeed"
+              : "Transactions will be declined"}
+          </p>
+        </div>
+      </div>
+      {showTransactionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl transform transition-all duration-300 animate-fadeIn overflow-hidden">
+            {/* Modal Header */}
+            <div
+              className={`bg-gradient-to-r ${
+                selectedAction?.color || "from-blue-500 to-blue-600"
+              } px-6 py-4`}
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                    <img
+                      src={selectedAction?.icon}
+                      alt={`${selectedAction?.name} icon`}
+                      className="w-6 h-6"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      {selectedAction?.name}
+                    </h2>
+                    <p className="text-white text-opacity-80 text-sm">
+                      {selectedAction?.description}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTransactionModal(false)}
+                  className="text-white hover:text-gray-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
+                >
                   <svg
-                    className="w-10 h-10 text-white"
+                    className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -259,33 +309,106 @@ export const ActionButtons = () => {
                       d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                </div>
-                <p className="text-2xl font-bold text-gray-800 mb-2">
-                  Transaction Declined
-                </p>
-                <p className="text-md text-gray-600 max-w-xs mx-auto">
-                  Your {selectedAction.name.toLowerCase()} has been declined.
-                  Please try again later.
-                </p>
+                </button>
               </div>
-            ) : (
-              <>
-                {error && (
-                  <div className="mb-5 p-4 bg-red-50 text-red-700 rounded-lg text-sm border-l-4 border-red-500 animate-shake">
-                    {error}
-                  </div>
-                )}
+            </div>
 
-                {FormComponent && (
-                  <FormComponent
-                    onSubmit={handleTransactionSubmit}
-                    onCancel={() => setShowTransactionModal(false)}
-                    minAmount={selectedAction.minAmount}
-                    maxAmount={selectedAction.maxAmount}
-                  />
-                )}
-              </>
-            )}
+            {/* Modal Content */}
+            <div className="p-6">
+              {success ? (
+                <div className="text-center py-8 transform transition-all duration-500 animate-fadeIn">
+                  <div className="w-24 h-24 bg-gradient-to-r from-green-400 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <svg
+                      className="w-12 h-12 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    Transaction Successful!
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Your {selectedAction?.name?.toLowerCase()} has been
+                    processed successfully.
+                  </p>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <p className="text-sm text-green-700 font-medium">
+                      ✓ Transaction completed and recorded
+                    </p>
+                  </div>
+                </div>
+              ) : showDeclineModal ? (
+                <div className="text-center py-8 transform transition-all duration-500 animate-fadeIn">
+                  <div className="w-24 h-24 bg-gradient-to-r from-red-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <svg
+                      className="w-12 h-12 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    Transaction Declined
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Your {selectedAction?.name?.toLowerCase()} has been
+                    declined.
+                  </p>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <p className="text-sm text-red-700 font-medium">
+                      ⚠ Please contact support or try again later
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                      <div className="flex items-center">
+                        <svg
+                          className="w-5 h-5 text-red-500 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="font-medium">{error}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {FormComponent && (
+                    <FormComponent
+                      onSubmit={handleTransactionSubmit}
+                      onCancel={() => setShowTransactionModal(false)}
+                      minAmount={selectedAction.minAmount}
+                      maxAmount={selectedAction.maxAmount}
+                    />
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -302,3 +425,5 @@ export const ActionButtons = () => {
     </>
   );
 };
+
+export default ActionButtons;

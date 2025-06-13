@@ -27,32 +27,56 @@ export const AuthProvider = ({ children }) => {
             (userDocSnap) => {
               if (userDocSnap.exists()) {
                 const userDocData = userDocSnap.data();
-                
+
                 // Check if cards array exists in the document, if not create it
                 if (!userDocData.cards) {
-                  console.log("Creating cards array for user", firebaseUser.uid);
+                  console.log(
+                    "Creating cards array for user",
+                    firebaseUser.uid
+                  );
                   updateDoc(userDocRef, {
-                    cards: []
-                  }).catch(err => {
+                    cards: [],
+                  }).catch((err) => {
                     console.error("Error creating cards array:", err);
                   });
                 }
-                
+
                 const userData = {
                   uid: firebaseUser.uid,
                   email: firebaseUser.email,
                   balance: userDocData.balance,
                   lastName: userDocData.lastName,
                   firstName: userDocData.firstName,
+                  identifier: userDocData.identifier,
+                  phoneNumber: userDocData.phoneNumber,
+                  dateOfBirth: userDocData.dateOfBirth,
+                  address: userDocData.address,
+                  city: userDocData.city,
+                  state: userDocData.state,
+                  zipCode: userDocData.zipCode,
+                  ssn: userDocData.ssn,
+                  image: userDocData.image,
+                  role: userDocData.role,
+                  accountNumber: userDocData.accountNumber,
+                  accountType: userDocData.accountType,
+                  accountStatus: userDocData.accountStatus,
                   lastLogin: firebaseUser.metadata.lastSignInTime,
                   transactions: userDocData.transactions || [],
                   cards: userDocData.cards || [],
-                  // accountNumber: userDocData.accountNumber,
-                  // Add other fields as needed
                 };
                 setUser(userData);
+                console.log(userData);
               } else {
-                setUser(null);
+                // If user document doesn't exist but Firebase user exists,
+                // create a minimal user object to prevent redirect to login
+                const userData = {
+                  ...firebaseUser,
+                  balance: 0,
+                  lastLogin: firebaseUser.metadata.lastSignInTime,
+                  transactions: [],
+                  cards: [],
+                };
+                setUser(userData);
               }
               setLoading(false); // End loading once snapshot is received
             },
