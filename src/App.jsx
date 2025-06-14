@@ -3,7 +3,8 @@ import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import OTPVerification from "./pages/OTPVerification";
-import OTPProtectedRoute from "./Components/OTPProtectedRoute"; // Import the OTPProtectedRoute component
+import OTPProtectedRoute from "./Components/OTPProtectedRoute";
+import AdminRoute from "./Components/AdminRoute";
 import AccountsPage from "./pages/Accounts";
 import TransfersPage from "./pages/TransfersPage";
 import PaymentsPage from "./pages/Payments";
@@ -74,8 +75,15 @@ function App() {
             }
           />
 
-          {/* Admin Route */}
-          <Route path="/admin" element={<AdminPage />} />
+          {/* Admin Route - Protected for admin users only */}
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
+            } 
+          />
 
           <Route path="/signup" element={<SignIn />} />
 

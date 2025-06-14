@@ -1,16 +1,26 @@
-import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Assuming your AuthContext is in the 'context' folder
+import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "./LoadingSpinner";
+import PropTypes from "prop-types";
 
 const AdminRoute = ({ children }) => {
-  const { currentUser, userRole } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   // Check if the user is authenticated and has the 'admin' role
-  if (!currentUser || userRole !== "admin") {
-    return <Navigate to="/login" />;
+  if (!user || user.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
+};
+
+AdminRoute.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default AdminRoute;
